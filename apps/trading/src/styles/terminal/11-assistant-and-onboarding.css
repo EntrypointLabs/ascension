@@ -1,31 +1,4 @@
 /* Assistant, onboarding, full screen, settings. */
-.ai-mark {
-  display: inline-grid;
-  place-items: center;
-  flex: none;
-  width: 28px;
-  height: 28px;
-  border-radius: 4px;
-  background: #f5f5f4;
-}
-.ai-mark .bmark-g {
-  fill: #0b0b0b;
-}
-.app[data-theme="light"] .ai-mark {
-  background: #111;
-}
-.app[data-theme="light"] .ai-mark .bmark-g {
-  fill: #fff;
-}
-.ai-mark.lg {
-  width: 48px;
-  height: 48px;
-}
-.ai-mark.sm {
-  width: 22px;
-  height: 22px;
-  border-radius: 2px;
-}
 .ai-launch {
   position: fixed;
   z-index: 85;
@@ -1047,28 +1020,6 @@ img.post-av,
   font-size: 15px;
   line-height: 1.55;
   color: var(--text-3);
-}
-.ob-mark {
-  display: inline-grid;
-  place-items: center;
-  width: 44px;
-  height: 44px;
-  border-radius: 4px;
-  background: #f5f5f4;
-}
-.ob-mark .bmark-g {
-  fill: #0b0b0b;
-}
-.app[data-theme="light"] .ob-mark {
-  background: #111;
-}
-.app[data-theme="light"] .ob-mark .bmark-g {
-  fill: #fff;
-}
-.ob-mark.sm {
-  width: 24px;
-  height: 24px;
-  border-radius: 2px;
 }
 .ob-terms {
   display: flex;

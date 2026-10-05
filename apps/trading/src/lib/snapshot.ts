@@ -1,3 +1,4 @@
+import { LOGO_MARK_PATH } from "@openfutures/ui/logo";
 function loadFontCss() {
   window.__ofFontCss ||= fetch(
     "https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap",
@@ -101,8 +102,6 @@ export function saveNodeSnapshot(node: any, filename: any, saveApi: any, onDone:
     const footerHeight = 46;
     clone.style.width = nodeWidth + "px";
     clone.style.maxWidth = "none";
-    const logoPath =
-      "M18.7 0L13 13L0 18.7L0 37L25 48L25 52L0 63L0 81.3L13 87L18.7 100L37 100L48 75L52 75L63 100L81.3 100L87 87L100 81.3L100 63L75 52L75 48L100 37L100 18.7L87 13L81.3 0L63 0L52 25L48 25L37 0ZM28 28L28 72L72 72L72 28Z";
     const now = new Date();
     const dateStamp = now.toISOString().slice(0, 10);
     const wrapper = document.createElement("div");
@@ -137,7 +136,7 @@ export function saveNodeSnapshot(node: any, filename: any, saveApi: any, onDone:
       '"><svg width="18" height="18" viewBox="-6 -6 112 112"><path fill-rule="evenodd" fill="' +
       surfaceColor +
       '" d="' +
-      logoPath +
+      LOGO_MARK_PATH +
       '"/></svg></span>OpenFutures.xyz</span><span style="font-size:12px;font-weight:500;color:' +
       mutedColor +
       '">Snapshot ' +
