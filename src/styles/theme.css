@@ -1,0 +1,71 @@
+/* Exposes the design tokens to Tailwind, so `bg-surface`, `text-text-3`, `border-line-2` and
+   friends follow the active theme. */
+@theme inline {
+  --color-accent: var(--accent);
+  --color-accent-2: var(--accent-2);
+  --color-accent-soft: var(--accent-soft);
+  --color-on-accent: var(--on-accent);
+  --color-accent-text: var(--accent-text);
+  --color-good-bg: var(--good-bg);
+  --color-good-line: var(--good-line);
+  --color-good-btn: var(--good-btn);
+  --color-blue-line: var(--blue-line);
+  --color-fl-up: var(--fl-up);
+  --color-fl-dn: var(--fl-dn);
+  --color-on-inv: var(--on-inv);
+  --color-bg-m: var(--bg-m);
+  --color-home-bg: var(--home-bg);
+  --color-c-up: var(--c-up);
+  --color-c-up-wick: var(--c-up-wick);
+  --color-c-vol-up: var(--c-vol-up);
+  --color-c-dn: var(--c-dn);
+  --color-c-dn-wick: var(--c-dn-wick);
+  --color-c-vol-dn: var(--c-vol-dn);
+  --color-long: var(--long);
+  --color-short: var(--short);
+  --color-v1: var(--v1);
+  --color-v2: var(--v2);
+  --color-v3: var(--v3);
+  --color-v4: var(--v4);
+  --color-v5: var(--v5);
+  --color-v6: var(--v6);
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-sunken: var(--sunken);
+  --color-raised: var(--raised);
+  --color-hover: var(--hover);
+  --color-active: var(--active);
+  --color-strong: var(--strong);
+  --color-line-1: var(--line-1);
+  --color-line-2: var(--line-2);
+  --color-line-3: var(--line-3);
+  --color-line-4: var(--line-4);
+  --color-text: var(--text);
+  --color-text-2: var(--text-2);
+  --color-text-3: var(--text-3);
+  --color-text-4: var(--text-4);
+  --color-up: var(--up);
+  --color-down: var(--down);
+  --color-good: var(--good);
+  --color-bad: var(--bad);
+  --color-warn: var(--warn);
+}
+
+@theme {
+  --font-sans: Geist, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: ui-monospace, SF Mono, Menlo, monospace;
+  --radius-xs: 2px;
+  --radius-sm: 4px;
+
+  /* The breakpoints the layout is built around. */
+  --breakpoint-*: initial;
+  --breakpoint-xs: 380px;
+  --breakpoint-sm: 520px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 1024px;
+  --breakpoint-xl: 1200px;
+  --breakpoint-2xl: 1600px;
+}
+
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+@custom-variant light (&:where([data-theme="light"], [data-theme="light"] *));

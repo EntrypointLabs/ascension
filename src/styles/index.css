@@ -1,0 +1,24 @@
+@layer theme, components, utilities;
+
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities);
+@import "./theme.css";
+
+/* Tailwind's preflight is left out on purpose: the design relies on browser defaults.
+   The partials below are one stylesheet split in cascade order, so keep them in sequence. */
+@import "./tokens.css" layer(components);
+@import "./base.css" layer(components);
+@import "./terminal/01-shell.css" layer(components);
+@import "./terminal/02-trade.css" layer(components);
+@import "./terminal/03-portfolio.css" layer(components);
+@import "./terminal/04-account.css" layer(components);
+@import "./terminal/05-watch.css" layer(components);
+@import "./terminal/06-market-tables.css" layer(components);
+@import "./terminal/07-prop.css" layer(components);
+@import "./terminal/08-search-and-chart-views.css" layer(components);
+@import "./terminal/09-funding-and-share.css" layer(components);
+@import "./terminal/10-social-and-browser.css" layer(components);
+@import "./terminal/11-assistant-and-onboarding.css" layer(components);
+@import "./terminal/12-analysis-and-home.css" layer(components);
+@import "./terminal/13-market-watch.css" layer(components);
+@import "./terminal/14-prop-vault.css" layer(components);
