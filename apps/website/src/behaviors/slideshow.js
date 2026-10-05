@@ -7,7 +7,6 @@ const FLING_PROJECTION = 0.25
 const DRAG_SLOP = 4
 
 const SLIDESHOWS = [
-  { selector: '.framer-1qsgnxd-container', gap: { desktop: 80, tablet: 16, phone: 16 } },
   { selector: '.framer-ftczt6-container', gap: 16 },
   { selector: '.framer-e4sdsf-container', gap: 10, loop: true },
   { selector: '.framer-1oiuupi-container', gap: 10, loop: true, fade: true },
