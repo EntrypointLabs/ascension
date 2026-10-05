@@ -1,0 +1,17 @@
+{
+  "name": "@openfutures/core",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@openfutures/tsconfig": "workspace:*",
+    "typescript": "^7.0.2"
+  }
+}

@@ -1,5 +1,5 @@
-import { hashString, seededRandom } from "@/lib/random";
-import { seededPriceSeries } from "@/lib/series";
+import { hashString, seededRandom } from "./random";
+import { seededPriceSeries } from "./series";
 
 export interface Candle {
   open: number;

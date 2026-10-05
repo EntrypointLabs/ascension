@@ -1,5 +1,5 @@
-import { hashString, seededRandom } from "@/lib/random";
-import type { Market, Venue } from "@/types";
+import { hashString, seededRandom } from "./random";
+import type { Market, Venue } from "./types";
 
 export interface BookLevel {
   /** Price. */

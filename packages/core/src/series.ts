@@ -1,4 +1,4 @@
-import { hashString, seededRandom } from "@/lib/random";
+import { hashString, seededRandom } from "./random";
 
 /** Axis step that yields about five round-numbered ticks across `range`. */
 export function niceStep(range: number): number {

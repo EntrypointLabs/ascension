@@ -1,0 +1,1 @@
+{ "extends": "@openfutures/tsconfig/base.json", "include": ["src"] }
