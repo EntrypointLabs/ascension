@@ -5,6 +5,7 @@ Monorepo for OpenFutures, managed with pnpm workspaces and Turborepo.
 ```
 apps/
   trading/        the trading terminal (Vite, React, TypeScript, Tailwind)
+  website/        the marketing site (Vite, static HTML, vanilla JS)
 packages/
   core/           platform-agnostic types, constants and functions shared by every app
   tsconfig/       the TypeScript base config every workspace extends
@@ -22,8 +23,9 @@ pnpm typecheck
 pnpm format
 ```
 
-`pnpm dev` currently starts the trading app on http://localhost:5173. Turborepo runs the `dev`
-script of every workspace, so a new app or backend joins it by defining its own `dev` script.
+`pnpm dev` currently starts the trading app on http://localhost:5173 and the website on
+http://localhost:5174. Turborepo runs the `dev` script of every workspace, so a new app or
+backend joins it by defining its own `dev` script.
 To run one workspace only: `pnpm --filter @openfutures/trading dev`.
 
 ## Shared code
