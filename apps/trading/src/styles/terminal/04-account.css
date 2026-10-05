@@ -582,10 +582,9 @@ button.vp-row.is-top.is-selected {
   color: #fff;
 }
 .dt-prop .dt-row {
-  grid-template-columns: minmax(160px, 1.6fr) minmax(110px, 1fr) repeat(
-      4,
-      minmax(84px, 1fr)
-    ) minmax(100px, 1fr);
+  grid-template-columns:
+    minmax(160px, 1.6fr) minmax(110px, 1fr) repeat(4, minmax(84px, 1fr))
+    minmax(100px, 1fr);
 }
 .dt-prop {
   min-width: 760px;

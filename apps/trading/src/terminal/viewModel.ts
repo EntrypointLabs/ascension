@@ -1,12 +1,13 @@
 import type { Terminal } from "@/terminal/Terminal";
-import { historyCandles } from "@/lib/candles";
+import { historyCandles } from "@openfutures/core";
 import { LOGOS } from "@/assets/logos";
 import { LIVE_BALANCE, liveTradeHistory } from "@/data/account";
-import { MARKETS, MARKET_CATEGORIES } from "@/data/markets";
+import { MARKETS } from "@/data/markets";
+import { MARKET_CATEGORIES } from "@openfutures/core";
 import { PROP_PLANS } from "@/data/prop";
 import { TIMEFRAMES } from "@/data/timeframes";
 import { VENUES, VENUE_COLORS } from "@/data/venues";
-import { MONTHS, WEEKDAYS, pad2 } from "@/lib/date";
+import { MONTHS, WEEKDAYS, pad2 } from "@openfutures/core";
 import {
   formatChange,
   formatCompact,
@@ -15,12 +16,12 @@ import {
   formatSignedUsd,
   formatUsd,
   parseCompact,
-} from "@/lib/format";
+} from "@openfutures/core";
 import { identicon } from "@/lib/identicon";
-import { buildOrderBook, simulateFill } from "@/lib/orderBook";
+import { buildOrderBook, simulateFill } from "@openfutures/core";
 import { livePrices } from "@/lib/prices";
-import { hashString, seededRandom } from "@/lib/random";
-import { niceStep, seededPriceSeries, sparklinePath } from "@/lib/series";
+import { hashString, seededRandom } from "@openfutures/core";
+import { niceStep, seededPriceSeries, sparklinePath } from "@openfutures/core";
 import { renderShareCard, saveNodeSnapshot } from "@/lib/snapshot";
 import { DEFAULT_PANE_SIZES } from "@/terminal/layout";
 

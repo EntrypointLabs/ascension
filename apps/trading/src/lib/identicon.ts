@@ -1,4 +1,4 @@
-import { hashString, seededRandom } from "@/lib/random";
+import { hashString, seededRandom } from "@openfutures/core";
 
 const AVATAR_PALETTES = [
   ["#1f2a44", "#7ea0ff"],

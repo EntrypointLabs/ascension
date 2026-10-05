@@ -599,10 +599,9 @@
   }
 }
 .wt-ex .wt-row {
-  grid-template-columns: minmax(230px, 2fr) minmax(130px, 1.1fr) 76px repeat(
-      2,
-      minmax(96px, 1fr)
-    ) repeat(2, minmax(88px, 0.8fr)) minmax(150px, 1.2fr) minmax(130px, 1.1fr) 76px;
+  grid-template-columns:
+    minmax(230px, 2fr) minmax(130px, 1.1fr) 76px repeat(2, minmax(96px, 1fr))
+    repeat(2, minmax(88px, 0.8fr)) minmax(150px, 1.2fr) minmax(130px, 1.1fr) 76px;
   min-width: 1260px;
   min-height: 72px;
 }
@@ -641,10 +640,9 @@
 }
 @media (min-width: 768px) and (max-width: 1399px) {
   .wt-ex .wt-row {
-    grid-template-columns: minmax(200px, 2fr) 70px repeat(2, minmax(90px, 1fr)) minmax(
-        84px,
-        0.8fr
-      ) minmax(140px, 1.2fr) minmax(120px, 1fr);
+    grid-template-columns:
+      minmax(200px, 2fr) 70px repeat(2, minmax(90px, 1fr)) minmax(84px, 0.8fr)
+      minmax(140px, 1.2fr) minmax(120px, 1fr);
     min-width: 0;
   }
   .wt-ex .wt-row > div:nth-child(2),

@@ -1,5 +1,5 @@
 import { generateTradeHistory } from "@/lib/tradeHistory";
-import type { Order, Position, PropPlan, Trade } from "@/types";
+import type { Order, Position, PropPlan, Trade } from "@openfutures/core";
 
 export const PROP_POSITIONS: Position[] = [
   { id: "pp1", sym: "US500", venue: "hyperliquid", side: "long", lev: 10, qty: 3, entry: 6690.5 },

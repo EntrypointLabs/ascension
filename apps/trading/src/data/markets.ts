@@ -1,4 +1,4 @@
-import type { Market, MarketCategory } from "@/types";
+import type { Market, MarketCategory } from "@openfutures/core";
 
 const MARKET_SEEDS: Omit<Market, "base" | "chg0">[] = [
   {
@@ -226,13 +226,3 @@ export const CATEGORY_VOLATILITY: Record<MarketCategory, number> = {
   Commodities: 0.45,
   Forex: 0.18,
 };
-
-/** Filter id and label pairs. */
-export const MARKET_CATEGORIES: [id: string, label: string][] = [
-  ["all", "All"],
-  ["Crypto", "Crypto"],
-  ["Stocks", "Stocks"],
-  ["Indices", "Indices"],
-  ["Commodities", "Commodities"],
-  ["Forex", "Forex"],
-];

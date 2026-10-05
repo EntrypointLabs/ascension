@@ -658,22 +658,19 @@
   color: var(--text-3);
 }
 .dt-pos .dt-row {
-  grid-template-columns: minmax(170px, 1.6fr) 92px minmax(110px, 1fr) repeat(
-      6,
-      minmax(84px, 1fr)
-    ) minmax(100px, 1fr) 186px;
+  grid-template-columns:
+    minmax(170px, 1.6fr) 92px minmax(110px, 1fr) repeat(6, minmax(84px, 1fr))
+    minmax(100px, 1fr) 186px;
 }
 .dt-ord .dt-row {
-  grid-template-columns: minmax(170px, 1.6fr) 92px minmax(110px, 1fr) 70px repeat(
-      3,
-      minmax(90px, 1fr)
-    ) 110px 110px 126px;
+  grid-template-columns:
+    minmax(170px, 1.6fr) 92px minmax(110px, 1fr) 70px repeat(3, minmax(90px, 1fr))
+    110px 110px 126px;
 }
 .dt-hist .dt-row {
-  grid-template-columns: 110px minmax(140px, 1.3fr) minmax(110px, 1fr) 110px repeat(
-      3,
-      minmax(90px, 1fr)
-    ) minmax(100px, 1fr) 52px;
+  grid-template-columns:
+    110px minmax(140px, 1.3fr) minmax(110px, 1fr) 110px repeat(3, minmax(90px, 1fr))
+    minmax(100px, 1fr) 52px;
 }
 .mcell {
   display: flex;

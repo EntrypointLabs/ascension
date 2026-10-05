@@ -1,4 +1,4 @@
-import type { Timeframe } from "@/types";
+import type { Timeframe } from "@openfutures/core";
 
 export const TIMEFRAMES: Timeframe[] = [
   {

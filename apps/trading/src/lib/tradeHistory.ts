@@ -1,8 +1,8 @@
 import { MARKETS } from "@/data/markets";
 // Trade prices are derived from the live marks, so the price feed must have run first.
 import "@/lib/prices";
-import { hashString, seededRandom } from "@/lib/random";
-import type { Side, Trade } from "@/types";
+import { hashString, seededRandom } from "@openfutures/core";
+import type { Side, Trade } from "@openfutures/core";
 
 /** Deterministic filler history, walking backwards in time from `startTime`. */
 export function generateTradeHistory(

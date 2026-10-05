@@ -1,5 +1,5 @@
 import { CATEGORY_VOLATILITY, MARKETS } from "@/data/markets";
-import { hashString, seededRandom } from "@/lib/random";
+import { hashString, seededRandom } from "@openfutures/core";
 
 /**
  * Simulated price feed. Moves every market's `price` and `chg` in place and returns the prices

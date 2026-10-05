@@ -290,10 +290,9 @@
 }
 .wt-row {
   display: grid;
-  grid-template-columns: minmax(230px, 2fr) repeat(2, minmax(96px, 1fr)) 92px repeat(
-      2,
-      minmax(96px, 1fr)
-    ) minmax(150px, 1.3fr) minmax(90px, 0.9fr) 104px 84px;
+  grid-template-columns:
+    minmax(230px, 2fr) repeat(2, minmax(96px, 1fr)) 92px repeat(2, minmax(96px, 1fr))
+    minmax(150px, 1.3fr) minmax(90px, 0.9fr) 104px 84px;
   align-items: center;
   column-gap: 12px;
   min-width: 1180px;

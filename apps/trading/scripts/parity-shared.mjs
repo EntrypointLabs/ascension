@@ -12,21 +12,31 @@ fs.mkdirSync(CACHE, { recursive: true });
 const sha = (s) => crypto.createHash("sha1").update(s).digest("hex");
 
 /** Serves fonts and CDN scripts from disk after the first fetch, so runs do not depend on the network. */
-export async function cacheExternal(context, { allow = /^https:\/\/(fonts\.(googleapis|gstatic)\.com|cdn\.jsdelivr\.net)\// } = {}) {
+export async function cacheExternal(
+  context,
+  { allow = /^https:\/\/(fonts\.(googleapis|gstatic)\.com|cdn\.jsdelivr\.net)\// } = {},
+) {
   await context.route(/^https?:\/\/(?!localhost)/, async (route) => {
     const url = route.request().url();
     if (!allow.test(url)) return route.abort();
     const file = path.join(CACHE, sha(url));
     if (fs.existsSync(file + ".json")) {
       const meta = JSON.parse(fs.readFileSync(file + ".json", "utf8"));
-      return route.fulfill({ status: meta.status, headers: meta.headers, body: fs.readFileSync(file) });
+      return route.fulfill({
+        status: meta.status,
+        headers: meta.headers,
+        body: fs.readFileSync(file),
+      });
     }
     try {
       const res = await route.fetch();
       const body = await res.body();
       if (res.ok()) {
         fs.writeFileSync(file, body);
-        fs.writeFileSync(file + ".json", JSON.stringify({ status: res.status(), headers: res.headers() }));
+        fs.writeFileSync(
+          file + ".json",
+          JSON.stringify({ status: res.status(), headers: res.headers() }),
+        );
       }
       return route.fulfill({ response: res, body });
     } catch {
@@ -41,7 +51,8 @@ export const seedRandom = () => {
 };
 
 /** CSS animations run on the compositor clock, which the paused page clock does not control. */
-export const FREEZE_CSS = "*,*::before,*::after{animation:none!important;transition:none!important}";
+export const FREEZE_CSS =
+  "*,*::before,*::after{animation:none!important;transition:none!important}";
 
 // The same image can be inlined as base64 or as a percent-encoded SVG; compare by content.
 function imageFingerprint(uri) {
@@ -51,7 +62,9 @@ function imageFingerprint(uri) {
   if (!/svg/.test(head)) return sha(Buffer.from(data, "base64"));
   let svg;
   try {
-    svg = /;base64/.test(head) ? Buffer.from(data, "base64").toString("utf8") : decodeURIComponent(data);
+    svg = /;base64/.test(head)
+      ? Buffer.from(data, "base64").toString("utf8")
+      : decodeURIComponent(data);
   } catch {
     svg = data;
   }
@@ -59,8 +72,14 @@ function imageFingerprint(uri) {
 }
 
 export function normaliseHtml(html) {
-  return html
-    // the chart library stamps the page URL into its attribution link
-    .replace(/utm_source=[^"]*/g, "utm_source=")
-    .replace(/"(data:image\/[^"]*)"/g, (_, uri) => `"image:${imageFingerprint(uri.replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">"))}"`);
+  return (
+    html
+      // the chart library stamps the page URL into its attribution link
+      .replace(/utm_source=[^"]*/g, "utm_source=")
+      .replace(
+        /"(data:image\/[^"]*)"/g,
+        (_, uri) =>
+          `"image:${imageFingerprint(uri.replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">"))}"`,
+      )
+  );
 }

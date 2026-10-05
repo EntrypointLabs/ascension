@@ -1,5 +1,5 @@
 import { generateTradeHistory } from "@/lib/tradeHistory";
-import type { Order, Position, Trade } from "@/types";
+import type { Order, Position, Trade } from "@openfutures/core";
 
 export const LIVE_BALANCE = 2500;
 export const LIVE_POSITIONS: Position[] = [

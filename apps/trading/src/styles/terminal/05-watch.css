@@ -534,10 +534,9 @@
     );
 }
 .dt-oh .dt-row {
-  grid-template-columns: 120px minmax(140px, 1.2fr) minmax(110px, 1fr) 70px 70px repeat(
-      3,
-      minmax(84px, 1fr)
-    ) 100px;
+  grid-template-columns:
+    120px minmax(140px, 1.2fr) minmax(110px, 1fr) 70px 70px repeat(3, minmax(84px, 1fr))
+    100px;
 }
 .st-ok {
   color: var(--text);
@@ -1907,13 +1906,10 @@
   grid-template-columns: repeat(5, minmax(0, 1fr));
 }
 .wt-row {
-  grid-template-columns: minmax(200px, 1.8fr) repeat(2, minmax(88px, 1fr)) minmax(
-      120px,
-      1.1fr
-    ) repeat(2, minmax(88px, 1fr)) minmax(104px, 1fr) minmax(76px, 0.8fr) minmax(
-      104px,
-      1fr
-    ) 92px 72px;
+  grid-template-columns:
+    minmax(200px, 1.8fr) repeat(2, minmax(88px, 1fr)) minmax(120px, 1.1fr)
+    repeat(2, minmax(88px, 1fr)) minmax(104px, 1fr) minmax(76px, 0.8fr) minmax(104px, 1fr)
+    92px 72px;
   min-width: 1240px;
 }
 .wt-row .sub {

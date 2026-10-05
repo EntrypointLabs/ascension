@@ -4,7 +4,16 @@ import { chromium } from "playwright-core";
 import pixelmatch from "pixelmatch";
 import { PNG } from "pngjs";
 
-import { ORIG, NEW, OUT, START, FREEZE_CSS, cacheExternal, normaliseHtml, seedRandom } from "./parity-shared.mjs";
+import {
+  ORIG,
+  NEW,
+  OUT,
+  START,
+  FREEZE_CSS,
+  cacheExternal,
+  normaliseHtml,
+  seedRandom,
+} from "./parity-shared.mjs";
 
 const only = process.argv[2];
 fs.mkdirSync(OUT, { recursive: true });
@@ -19,7 +28,11 @@ const scenarios = [
   ["d-watch", desktop, { initialScreen: "watch" }],
   ["d-watch-open", desktop, { initialScreen: "watch", initialWatchOpen: "BTC" }],
   ["d-prop", desktop, { initialAccount: "prop", initialScreen: "prop" }],
-  ["d-prop-light", desktop, { initialAccount: "prop", initialScreen: "prop", initialTheme: "light" }],
+  [
+    "d-prop-light",
+    desktop,
+    { initialAccount: "prop", initialScreen: "prop", initialTheme: "light" },
+  ],
   ["d-profile", desktop, { initialProfile: "open" }],
   ["d-drawer", desktop, { initialDrawer: "open" }],
   ["d-venues", desktop, { initialVenuePanel: "open" }],
@@ -79,7 +92,10 @@ async function captureOnce(browser, url, viewport, props, file) {
         if (pseudo && cs.content === "none") continue;
         const o = {};
         for (const k of cs) if (!k.startsWith("--")) o[k] = cs.getPropertyValue(k);
-        out.push([`${el.tagName.toLowerCase()}.${el.getAttribute("class") || ""}${pseudo || ""}`, o]);
+        out.push([
+          `${el.tagName.toLowerCase()}.${el.getAttribute("class") || ""}${pseudo || ""}`,
+          o,
+        ]);
       }
     }
     return out;
@@ -99,7 +115,12 @@ async function capture(...args) {
 }
 
 // The CSS minifier rewrites some values into equivalent notations.
-const DIRECTIONS = { "to top": "0deg", "to right": "90deg", "to bottom": "180deg", "to left": "270deg" };
+const DIRECTIONS = {
+  "to top": "0deg",
+  "to right": "90deg",
+  "to bottom": "180deg",
+  "to left": "270deg",
+};
 const normalise = (prop, value) => {
   let v = value.replace(/to (top|right|bottom|left)(?=,)/g, (m) => DIRECTIONS[m]);
   if (prop.startsWith("background-position")) v = v.replace(/\b0%/g, "0px");
@@ -124,7 +145,9 @@ function diffStyles(a, b) {
     const sb = b[i][1];
     for (const prop of Object.keys(sa)) {
       if (!sameValue(normalise(prop, sa[prop]), normalise(prop, sb[prop] ?? ""))) {
-        diffs.push(`${key} { ${prop}: ${sa[prop].slice(0, 80)} => ${(sb[prop] ?? "").slice(0, 80)} }`);
+        diffs.push(
+          `${key} { ${prop}: ${sa[prop].slice(0, 80)} => ${(sb[prop] ?? "").slice(0, 80)} }`,
+        );
       }
     }
   }

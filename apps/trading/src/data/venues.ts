@@ -1,6 +1,6 @@
 import { LOGOS } from "@/assets/logos";
 
-import type { Venue } from "@/types";
+import type { Venue } from "@openfutures/core";
 
 const VENUE_SEEDS: Omit<Venue, "logo">[] = [
   { id: "binance", name: "Binance", off: 0.1, fee: 0.045, mul: 1.4, fund: 0.0084, spr: 0.4 },

@@ -4,7 +4,16 @@ import fs from "node:fs";
 import path from "node:path";
 import { chromium } from "playwright-core";
 
-import { ORIG, NEW, OUT, START, FREEZE_CSS, cacheExternal, normaliseHtml, seedRandom } from "./parity-shared.mjs";
+import {
+  ORIG,
+  NEW,
+  OUT,
+  START,
+  FREEZE_CSS,
+  cacheExternal,
+  normaliseHtml,
+  seedRandom,
+} from "./parity-shared.mjs";
 
 const STEPS = Number(process.env.STEPS || 250);
 const only = process.argv[2];
@@ -89,10 +98,16 @@ const act = (n) => {
   const all = [
     ...document
       .getElementById("root")
-      .querySelectorAll("button:not(:disabled), [role=tab], [role=button], a[href], input, select, summary"),
+      .querySelectorAll(
+        "button:not(:disabled), [role=tab], [role=button], a[href], input, select, summary",
+      ),
   ]
     .filter(visible)
-    .filter((el) => !/Save image|Copy image|Saving/.test(el.textContent || "") && !/\b(snap-btn|fs-btn|fs-close)\b/.test(el.className));
+    .filter(
+      (el) =>
+        !/Save image|Copy image|Saving/.test(el.textContent || "") &&
+        !/\b(snap-btn|fs-btn|fs-close)\b/.test(el.className),
+    );
   if (!all.length) return "nothing visible";
   const describe = (el) =>
     `${el.tagName.toLowerCase()}.${(el.getAttribute("class") || "").slice(0, 40)} "${(el.getAttribute("aria-label") || el.textContent || "").trim().slice(0, 30)}"`;
@@ -110,7 +125,10 @@ const act = (n) => {
   const label = describe(el);
   seen.add(label);
   if (el.tagName === "INPUT" && el.type === "file") return "skip " + label;
-  if (el.tagName === "INPUT" && !["checkbox", "radio", "range", "button", "submit"].includes(el.type)) {
+  if (
+    el.tagName === "INPUT" &&
+    !["checkbox", "radio", "range", "button", "submit"].includes(el.type)
+  ) {
     const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value").set;
     setter.call(el, el.type === "number" || el.inputMode === "decimal" ? "250" : "bt");
     el.dispatchEvent(new Event("input", { bubbles: true }));
@@ -147,7 +165,8 @@ for (const [name, viewport, props, stride] of runs) {
     const [da, db] = await Promise.all([a.page.evaluate(act, n), b.page.evaluate(act, n)]);
     trail.push(`${step}: ${da}`);
     await Promise.all([a.page.clock.runFor(400), b.page.clock.runFor(400)]);
-    if (step % 9 === 8) await Promise.all([a.page.keyboard.press("Escape"), b.page.keyboard.press("Escape")]);
+    if (step % 9 === 8)
+      await Promise.all([a.page.keyboard.press("Escape"), b.page.keyboard.press("Escape")]);
     const [ha, hb] = await Promise.all([snapshot(a.page), snapshot(b.page)]);
     if (da !== db || ha !== hb || a.errors.join() !== b.errors.join()) {
       result = `MISMATCH at step ${step} (${da} / ${db}) errs=${a.errors.length}/${b.errors.length} ${b.errors.at(-1) || ""}`;
@@ -159,7 +178,9 @@ for (const [name, viewport, props, stride] of runs) {
     }
   }
   const kinds = new Set(trail.map((t) => t.replace(/^\d+: /, "")));
-  console.log(`${name.padEnd(18)} steps=${step} distinct=${kinds.size} origErrors=${a.errors.length} ${result}`);
+  console.log(
+    `${name.padEnd(18)} steps=${step} distinct=${kinds.size} origErrors=${a.errors.length} ${result}`,
+  );
   await a.ctx.close();
   await b.ctx.close();
 }
