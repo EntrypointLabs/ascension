@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 64 64"><clipPath id="ac"><circle cx="32" cy="32" r="32"/></clipPath><g clip-path="url(#ac)"><svg x="0" y="0" width="64" height="64" viewBox="0 0 512 512" preserveAspectRatio="xMidYMid slice">
+  <path fill="#bd3d44" d="M0 0h512v512H0"/>
+  <path stroke="#fff" stroke-width="40" d="M0 58h512M0 137h512M0 216h512M0 295h512M0 374h512M0 453h512"/>
+  <path fill="#192f5d" d="M0 0h390v275H0z"/>
+  <marker id="aus-a" markerHeight="30" markerWidth="30">
+    <path fill="#fff" d="m15 0 9.3 28.6L0 11h30L5.7 28.6"/>
+  </marker>
+  <path fill="none" marker-mid="aurl(#aus-a)" d="m0 0 18 11h65 65 65 65 66L51 39h65 65 65 65L18 66h65 65 65 65 66L51 94h65 65 65 65L18 121h65 65 65 65 66L51 149h65 65 65 65L18 177h65 65 65 65 66L51 205h65 65 65 65L18 232h65 65 65 65 66z"/>
+</svg></g><rect x="10" y="37" width="44" height="19" rx="9.5" fill="#0b0b0b" fill-opacity="0.88"/><text x="32" y="51.5" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-weight="700" font-size="19" fill="#ffffff">30</text></svg>
