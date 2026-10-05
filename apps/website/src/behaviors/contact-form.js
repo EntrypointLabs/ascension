@@ -7,6 +7,9 @@ const STATES = {
   error: { variant: 'framer-v-1fj2sur', name: 'Error', message: 'Something went wrong' },
 }
 const RESET_AFTER = 3000
+// Hidden decoy inputs that only automated submitters fill in. One of them reuses the name
+// `message`, so they must never be serialised alongside the real fields.
+const TRAP = 'input[aria-hidden="true"]'
 
 function setup(form) {
   const button = form.querySelector('button[type="submit"]')
@@ -46,13 +49,18 @@ function setup(form) {
     // form (data-endpoint), nothing can be sent, so the visitor is told it failed.
     const endpoint = form.dataset.endpoint
     show('loading')
+    const fields = $$('input, select, textarea', form).filter((field) => field.name && !field.matches(TRAP))
+    const trapped = $$(TRAP, form).some((field) => field.value)
     let delivered = false
-    if (endpoint) {
+    if (trapped) {
+      // Report success without sending, so a bot learns nothing from the response.
+      delivered = true
+    } else if (endpoint) {
       try {
         const response = await fetch(endpoint, {
           method: 'POST',
           headers: { 'content-type': 'application/json', accept: 'application/json' },
-          body: JSON.stringify(Object.fromEntries(new FormData(form))),
+          body: JSON.stringify(Object.fromEntries(fields.map((field) => [field.name, field.value]))),
         })
         delivered = response.ok
       } catch {
