@@ -50,6 +50,7 @@ function setupMenu(bar) {
     open = next
     motion?.stop()
     panel.setAttribute('aria-expanded', String(open))
+    nav.inert = !open
     icon.classList.toggle(ICON_ACTIVE, open)
     icon.classList.toggle(ICON_REST, !open)
     if (open) showBackdrop(() => setOpen(false))
@@ -116,6 +117,8 @@ function setupMenu(bar) {
   panel.setAttribute('tabindex', '0')
   panel.setAttribute('aria-label', 'Menu')
   panel.setAttribute('aria-expanded', 'false')
+  // Closed, the list is clipped to a sliver but its links would still take keyboard focus.
+  nav.inert = true
   panel.style.cursor = 'pointer'
   panel.addEventListener('click', toggle)
   panel.addEventListener('keydown', (event) => {
