@@ -1,0 +1,116 @@
+import { generateTradeHistory } from "@/lib/tradeHistory";
+import type { Order, Position, Trade } from "@/types";
+
+export const LIVE_BALANCE = 2500;
+export const LIVE_POSITIONS: Position[] = [
+  { id: "p1", sym: "ETH", venue: "hyperliquid", side: "long", lev: 10, qty: 2.5048, entry: 1996.1 },
+  { id: "p2", sym: "BTC", venue: "binance", side: "short", lev: 5, qty: 0.05, entry: 87120 },
+  { id: "p3", sym: "SOL", venue: "okx", side: "long", lev: 20, qty: 40, entry: 130.85 },
+];
+export const LIVE_ORDERS: Order[] = [
+  {
+    id: "o1",
+    sym: "ETH",
+    venue: "hyperliquid",
+    side: "long",
+    type: "Limit",
+    price: 1980,
+    qty: 1,
+    filled: 0,
+    placed: "Oct 2, 08:14",
+  },
+  {
+    id: "o2",
+    sym: "SUI",
+    venue: "lighter",
+    side: "short",
+    type: "Limit",
+    price: 2.55,
+    qty: 1500,
+    filled: 35,
+    placed: "Oct 1, 19:02",
+  },
+];
+const RECENT_TRADES: Trade[] = [
+  {
+    time: "Oct 2, 07:52",
+    sym: "ETH",
+    venue: "hyperliquid",
+    action: "Open long",
+    side: "long",
+    price: 1996.1,
+    qty: 2.5048,
+    fee: 1.75,
+    pnl: null,
+  },
+  {
+    time: "Oct 1, 21:10",
+    sym: "BTC",
+    venue: "binance",
+    action: "Open short",
+    side: "short",
+    price: 87120,
+    qty: 0.05,
+    fee: 1.96,
+    pnl: null,
+  },
+  {
+    time: "Oct 1, 14:03",
+    sym: "SOL",
+    venue: "okx",
+    action: "Open long",
+    side: "long",
+    price: 130.85,
+    qty: 40,
+    fee: 2.62,
+    pnl: null,
+  },
+  {
+    time: "Sep 30, 18:40",
+    sym: "DOGE",
+    venue: "dydx",
+    action: "Close long",
+    side: "short",
+    price: 0.1658,
+    qty: 12000,
+    fee: 0.99,
+    pnl: 52.8,
+  },
+  {
+    time: "Sep 30, 11:22",
+    sym: "DOGE",
+    venue: "dydx",
+    action: "Open long",
+    side: "long",
+    price: 0.1614,
+    qty: 12000,
+    fee: 0.97,
+    pnl: null,
+  },
+  {
+    time: "Sep 29, 16:05",
+    sym: "PEPE",
+    venue: "binance",
+    action: "Close short",
+    side: "long",
+    price: 0.00000698,
+    qty: 150000000,
+    fee: 0.52,
+    pnl: -18.4,
+  },
+];
+
+export const liveTradeHistory: Trade[] = RECENT_TRADES.concat(
+  generateTradeHistory("live-hist", 58, Date.UTC(2026, 8, 29, 16, 5), [
+    "BTC",
+    "ETH",
+    "SOL",
+    "HYPE",
+    "DOGE",
+    "XRP",
+    "SUI",
+    "NVDA",
+    "US500",
+    "XAU",
+  ]),
+);
