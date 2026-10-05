@@ -20,6 +20,8 @@ export function initParallax() {
     }),
   )
 
+  if (!layers.length) return
+
   let lastScroll = -1
   onFrame(() => {
     if (window.scrollY === lastScroll) return
