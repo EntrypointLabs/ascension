@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" role="img" aria-label="Entrypoint">
+  <rect width="120" height="120" rx="26" fill="#111113"/>
+  <g transform="translate(24 24) scale(3)">
+    <rect x="2.5" y="2.5" width="19" height="19" rx="7" stroke="#FFFFFF" stroke-width="3" stroke-dasharray="14 2" stroke-dashoffset="4.5" fill="none"/>
+  </g>
+</svg>

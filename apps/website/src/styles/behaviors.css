@@ -1,0 +1,99 @@
+/* The site's own rules set `display` on these elements, which would otherwise win over the attribute. */
+[hidden] {
+  display: none !important;
+}
+
+/* Pointer badge shown while hovering a session card. */
+.cursor-badge {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 13;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  background-color: var(--token-1530324f-f67d-478c-b9fa-e0c31727e1b8, rgb(255, 255, 255));
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s linear;
+  overflow: clip;
+}
+
+.cursor-badge[data-visible] {
+  opacity: 1;
+}
+
+.cursor-badge__icon {
+  width: 20px;
+  aspect-ratio: 1;
+  background-color: var(--token-2255d844-7158-4eb0-9dc1-01533948a5b9, rgb(0, 0, 0));
+  mask: url('data:image/svg+xml,<svg display="block" id="1777438289" role="presentation" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M 12 12 L 6 12 L 6 10.5 L 12 10.5 Z M 6 10.5 L 3 10.5 L 3 9 L 6 9 Z M 15 10.5 L 12 10.5 L 12 9 L 15 9 Z M 3 9 L 1.5 9 L 1.5 7.5 L 3 7.5 Z M 10.5 4.5 L 9 4.5 L 9 6 L 10.5 6 L 10.5 4.5 L 12 4.5 L 12 7.5 L 10.5 7.5 L 10.5 9 L 7.5 9 L 7.5 7.5 L 6 7.5 L 6 4.5 L 7.5 4.5 L 7.5 3 L 10.5 3 Z M 16.5 9 L 15 9 L 15 7.5 L 16.5 7.5 Z M 1.5 7.5 L 0 7.5 L 0 4.5 L 1.5 4.5 Z M 18 7.5 L 16.5 7.5 L 16.5 4.5 L 18 4.5 Z M 3 4.5 L 1.5 4.5 L 1.5 3 L 3 3 Z M 16.5 4.5 L 15 4.5 L 15 3 L 16.5 3 Z M 6 3 L 3 3 L 3 1.5 L 6 1.5 Z M 15 3 L 12 3 L 12 1.5 L 15 1.5 Z M 12 1.5 L 6 1.5 L 6 0 L 12 0 Z" fill="black" height="12.000001013278961px" id="jw3CDqIja" transform="translate(3 6)" width="18px"/></svg>') no-repeat center / auto;
+  animation: cursor-badge-nudge 1s linear infinite alternate;
+}
+
+@keyframes cursor-badge-nudge {
+  to {
+    transform: translateX(-2px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cursor-badge__icon {
+    animation: none;
+  }
+}
+
+/* Inner pages keep one copy of each breakpoint-specific block; only the matching one renders. */
+.bp {
+  display: contents;
+}
+
+@media (min-width: 1200px) {
+  .bp:not(.bp-desktop) {
+    display: none;
+  }
+}
+
+@media (min-width: 810px) and (max-width: 1199.98px) {
+  .bp:not(.bp-tablet) {
+    display: none;
+  }
+}
+
+@media (max-width: 809.98px) {
+  .bp:not(.bp-phone) {
+    display: none;
+  }
+}
+
+/* Contact form submit button: states shown in place of the label. */
+.form-status {
+  font-family: "Geist Mono", "Geist Mono Placeholder", monospace;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.4em;
+  text-transform: uppercase;
+  white-space: pre;
+  color: var(--token-2255d844-7158-4eb0-9dc1-01533948a5b9, rgb(0, 0, 0));
+}
+
+.form-status--error {
+  color: rgb(255, 0, 0);
+}
+
+.form-spinner {
+  width: 20px;
+  aspect-ratio: 1;
+  mask: url('/assets/images/pGiXYozQ3mE4cilNOItfe2L2fUA.svg') alpha no-repeat center / cover;
+  background: conic-gradient(from 0deg at 50% 50%, rgba(255, 255, 255, 0) 7.2deg, var(--token-2255d844-7158-4eb0-9dc1-01533948a5b9, rgb(0, 0, 0)) 342deg);
+  animation: form-spinner-turn 1s linear infinite;
+}
+
+@keyframes form-spinner-turn {
+  to {
+    transform: rotate(360deg);
+  }
+}
