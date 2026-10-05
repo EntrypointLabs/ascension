@@ -3,8 +3,8 @@
 Perpetual-futures trading terminal: trade, Market Watch and prop/LP vault screens, across
 several venues. Built with Vite, React 19, TypeScript and Tailwind CSS v4.
 
-This codebase is a 1:1 source rebuild of the design prototype kept in
-`reference/openfutures-v90.html`. Markup, styles and behaviour match the prototype; everything
+This codebase is a 1:1 source rebuild of the v90 design prototype. The prototype is not in the
+repository; the parity checks expect a local copy at `reference/openfutures-v90.html`. Markup, styles and behaviour match the prototype; everything
 that looks like live data is still simulated and is meant to be replaced (see
 [Integration points](#integration-points)).
 
