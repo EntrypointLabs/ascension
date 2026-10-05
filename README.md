@@ -8,6 +8,7 @@ apps/
   website/        the marketing site (Vite, static HTML, vanilla JS)
 packages/
   core/           platform-agnostic types, constants and functions shared by every app
+  ui/             shared interface pieces, starting with the logo (React, a web component, icons)
   tsconfig/       the TypeScript base config every workspace extends
 ```
 
