@@ -1,3 +1,4 @@
+import { defineLogoElement } from '@openfutures/ui/logo-element'
 import { initTypewriterBoxes } from './behaviors/typewriter-box.js'
 import { initNumberCounters } from './behaviors/number-counter.js'
 import { initHoverStaggerText } from './behaviors/hover-stagger-text.js'
@@ -16,6 +17,7 @@ import { initCursorImageTrail } from './behaviors/cursor-image-trail.js'
 import { initGlassSurfaces } from './behaviors/glass-surface.js'
 import { initContactForm } from './behaviors/contact-form.js'
 
+defineLogoElement()
 initTypewriterBoxes()
 initNumberCounters()
 initHoverStaggerText()

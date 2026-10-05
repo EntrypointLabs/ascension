@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@openfutures/ui": "workspace:*",
     "motion": "^14.0.0"
   },
   "devDependencies": {

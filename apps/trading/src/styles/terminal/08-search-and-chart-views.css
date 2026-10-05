@@ -2112,21 +2112,6 @@ input:focus:not(:focus-visible) {
     display: grid;
   }
 }
-.bmark {
-  display: inline-grid;
-  place-items: center;
-  flex: none;
-  border-radius: 4px;
-  background: #f5f5f4;
-  padding: 3px;
-}
-.bmark-g {
-  fill: #0b0b0b;
-}
-.app[data-theme="light"] .bmark {
-  background: transparent;
-  padding: 0;
-}
 .brand {
   gap: 10px;
 }

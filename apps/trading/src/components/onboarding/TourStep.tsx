@@ -1,6 +1,7 @@
 import { Fragment } from "react";
 import { parseStyle } from "@/lib/style";
 import type { AriaBoolean, TerminalViewModel } from "@/terminal/types";
+import { LogoTile } from "@openfutures/ui";
 
 export function TourStep({ vm }: { vm: TerminalViewModel }) {
   return (
@@ -41,15 +42,7 @@ export function TourStep({ vm }: { vm: TerminalViewModel }) {
                 <i />
               </div>
               <div className="oar-best">
-                <span className="ob-mark sm">
-                  <svg width="16" height="16" viewBox="-6 -6 112 112" aria-hidden="true">
-                    <path
-                      className="bmark-g"
-                      fillRule="evenodd"
-                      d="M18.7 0L13 13L0 18.7L0 37L25 48L25 52L0 63L0 81.3L13 87L18.7 100L37 100L48 75L52 75L63 100L81.3 100L87 87L100 81.3L100 63L75 52L75 48L100 37L100 18.7L87 13L81.3 0L63 0L52 25L48 25L37 0ZM28 28L28 72L72 72L72 28Z"
-                    />
-                  </svg>
-                </span>
+                <LogoTile size="sm" />
                 <b>Best fill</b>
                 <span className="num">{vm.ob?.bestName}</span>
               </div>

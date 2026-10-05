@@ -97,3 +97,15 @@
     transform: rotate(360deg);
   }
 }
+
+/* The OpenFutures mark inside a glass badge. The element keeps the badge icon's position and size. */
+.badge-logo {
+  display: block;
+}
+
+.badge-logo svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  fill: var(--token-1530324f-f67d-478c-b9fa-e0c31727e1b8, rgb(255, 255, 255));
+}

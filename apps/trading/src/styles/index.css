@@ -8,6 +8,7 @@
    The partials below are one stylesheet split in cascade order, so keep them in sequence. */
 @import "./tokens.css" layer(components);
 @import "./base.css" layer(components);
+@import "@openfutures/ui/logo.css" layer(components);
 @import "./terminal/01-shell.css" layer(components);
 @import "./terminal/02-trade.css" layer(components);
 @import "./terminal/03-portfolio.css" layer(components);
