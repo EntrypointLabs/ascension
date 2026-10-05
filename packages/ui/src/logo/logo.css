@@ -1,0 +1,73 @@
+/* The OpenFutures logo: the mark, and the mark inside its square.
+   Apps set data-theme="light" on an ancestor to get the light-theme treatment. */
+
+.bmark-g {
+  fill: #0b0b0b;
+}
+
+/* Brand: beside the product name. The tile drops away on the light theme. */
+.bmark {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  border-radius: 4px;
+  background: #f5f5f4;
+  padding: 3px;
+}
+[data-theme="light"] .bmark {
+  background: transparent;
+  padding: 0;
+}
+
+/* Tile: always a square, flipping with the theme. Two families share the look and differ in size:
+   .ai-mark is 28px (.sm 22px, .lg 48px) and .ob-mark is 44px (.sm 24px). */
+.ai-mark {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
+  background: #f5f5f4;
+}
+.ai-mark .bmark-g {
+  fill: #0b0b0b;
+}
+[data-theme="light"] .ai-mark {
+  background: #111;
+}
+[data-theme="light"] .ai-mark .bmark-g {
+  fill: #fff;
+}
+.ai-mark.lg {
+  width: 48px;
+  height: 48px;
+}
+.ai-mark.sm {
+  width: 22px;
+  height: 22px;
+  border-radius: 2px;
+}
+
+.ob-mark {
+  display: inline-grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 4px;
+  background: #f5f5f4;
+}
+.ob-mark .bmark-g {
+  fill: #0b0b0b;
+}
+[data-theme="light"] .ob-mark {
+  background: #111;
+}
+[data-theme="light"] .ob-mark .bmark-g {
+  fill: #fff;
+}
+.ob-mark.sm {
+  width: 24px;
+  height: 24px;
+  border-radius: 2px;
+}

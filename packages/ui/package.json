@@ -1,0 +1,30 @@
+{
+  "name": "@openfutures/ui",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "sideEffects": [
+    "**/*.css"
+  ],
+  "exports": {
+    ".": "./src/index.ts",
+    "./logo": "./src/logo/mark.ts",
+    "./logo-tile": "./src/logo/tile.ts",
+    "./logo-element": "./src/logo/element.ts",
+    "./logo.css": "./src/logo/logo.css",
+    "./logo-mark.svg": "./assets/logo-mark.svg"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "icons": "node scripts/build-icons.mjs"
+  },
+  "peerDependencies": {
+    "react": "^19.3.0"
+  },
+  "devDependencies": {
+    "@openfutures/tsconfig": "workspace:*",
+    "@types/react": "^19.3.0",
+    "react": "^19.3.0",
+    "typescript": "^7.0.2"
+  }
+}
