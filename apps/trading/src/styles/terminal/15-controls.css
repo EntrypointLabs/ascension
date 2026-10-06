@@ -189,102 +189,38 @@
 .app .page-loading {
   display: block;
 }
-.sk {
-  display: block;
-  border-radius: 4px;
-  background: linear-gradient(90deg, var(--raised) 0%, var(--active) 50%, var(--raised) 100%);
-  background-size: 200% 100%;
-  animation: skShimmer 1.4s ease-in-out infinite;
+.page-loading .pl-logo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 22px;
+  min-height: 60vh;
+  color: var(--text);
+  animation: plPulse 1.6s ease-in-out infinite;
 }
-@keyframes skShimmer {
-  from {
-    background-position: 100% 0;
+.pl-mark {
+  width: 52px;
+  height: 52px;
+  fill: currentColor;
+}
+.pl-wordmark {
+  width: 200px;
+  height: auto;
+}
+@keyframes plPulse {
+  0%,
+  100% {
+    opacity: 0.12;
   }
-  to {
-    background-position: -100% 0;
+  50% {
+    opacity: 0.32;
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .sk {
+  .page-loading .pl-logo {
     animation: none;
-  }
-}
-.sk-head {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 24px;
-  margin-bottom: 22px;
-}
-.sk-title {
-  width: 220px;
-  height: 36px;
-}
-.sk-line {
-  width: 320px;
-  max-width: 60vw;
-  height: 14px;
-  margin-top: 10px;
-}
-.sk-toggle {
-  width: 260px;
-  height: 40px;
-}
-.sk-stats {
-  display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  margin-bottom: 16px;
-  border: 1px solid var(--line-2);
-  border-radius: 4px;
-}
-.sk-stat {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding: 16px 18px;
-  border-right: 1px solid var(--line-2);
-}
-.sk-stat:last-child {
-  border-right: 0;
-}
-.sk-label {
-  width: 40%;
-  height: 12px;
-}
-.sk-value {
-  width: 65%;
-  height: 26px;
-}
-.sk-card {
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
-  padding: 20px 24px 24px;
-  border: 1px solid var(--line-2);
-  border-radius: 4px;
-}
-.sk-block {
-  height: 360px;
-}
-@media (max-width: 767px) {
-  .sk-toggle {
-    display: none;
-  }
-  .sk-title {
-    width: 160px;
-    height: 30px;
-  }
-  .sk-stats {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-  .sk-stat:nth-child(n + 3) {
-    display: none;
-  }
-  .sk-stat:nth-child(2) {
-    border-right: 0;
-  }
-  .sk-block {
-    height: 240px;
+    opacity: 0.2;
   }
 }
 .page-error .page-inner {

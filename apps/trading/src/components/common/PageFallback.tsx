@@ -1,4 +1,5 @@
 import { Component, type ReactNode } from "react";
+import { LogoMark, LogoWordmark } from "@openfutures/ui";
 
 const PAGE_NAMES: Record<string, string> = {
   watch: "Market Watch",
@@ -7,35 +8,14 @@ const PAGE_NAMES: Record<string, string> = {
 };
 
 export function PageFallback({ screen }: { screen: string }) {
-  const name = PAGE_NAMES[screen] || "page";
-  const hasStats = screen !== "prop";
   return (
     <section className="page page-loading" aria-busy="true">
-      <div className="page-inner">
-        <span className="sr-only" role="status">
-          Loading {name}
-        </span>
-        <div className="sk-head" aria-hidden="true">
-          <div>
-            <i className="sk sk-title" />
-            <i className="sk sk-line" />
-          </div>
-          <i className="sk sk-toggle" />
-        </div>
-        {hasStats ? (
-          <div className="sk-stats" aria-hidden="true">
-            {[0, 1, 2, 3, 4].map((i) => (
-              <div key={i} className="sk-stat">
-                <i className="sk sk-label" />
-                <i className="sk sk-value" />
-              </div>
-            ))}
-          </div>
-        ) : null}
-        <div className="sk-card" aria-hidden="true">
-          <i className="sk sk-label" />
-          <i className="sk sk-block" />
-        </div>
+      <span className="sr-only" role="status">
+        Loading {PAGE_NAMES[screen] || "page"}
+      </span>
+      <div className="pl-logo" aria-hidden="true">
+        <LogoMark className="pl-mark" />
+        <LogoWordmark className="pl-wordmark" />
       </div>
     </section>
   );
