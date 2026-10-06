@@ -177,15 +177,6 @@
 }
 
 /* Placeholder while a page's code loads, and the message when it fails to. */
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0 0 0 0);
-  white-space: nowrap;
-}
 .app .page-loading {
   display: block;
 }
@@ -253,4 +244,131 @@
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
+}
+
+/* Chart tooltips open to the right of the cursor line, or to its left near the right edge. */
+.mwc-tip.side-r {
+  transform: translateX(14px);
+}
+.mwc-tip.side-l {
+  transform: translateX(calc(-100% - 14px));
+}
+
+.skip-link {
+  position: fixed;
+  top: 8px;
+  left: 8px;
+  z-index: 1000;
+  padding: 10px 14px;
+  border-radius: 4px;
+  background: var(--text);
+  color: var(--on-inv);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  transform: translateY(-200%);
+}
+.skip-link:focus {
+  transform: none;
+}
+#main:focus,
+.wsheet:focus {
+  outline: none;
+}
+
+/* Sideways-scrolling regions fade the edge that has more content. */
+.xscroll:focus-visible {
+  outline: 2px solid var(--text);
+  outline-offset: -2px;
+}
+.xscroll[data-more="r"] {
+  mask-image: linear-gradient(to right, #000 calc(100% - 48px), transparent);
+}
+.xscroll[data-more="l"] {
+  mask-image: linear-gradient(to left, #000 calc(100% - 48px), transparent);
+}
+.xscroll[data-more="l r"] {
+  mask-image: linear-gradient(
+    to right,
+    transparent,
+    #000 48px,
+    #000 calc(100% - 48px),
+    transparent
+  );
+}
+
+/* Market Watch tables whose rows act as buttons: the button sits in a cell and covers the row. */
+.lg-tr,
+.pf-row {
+  position: relative;
+}
+.lg-hc {
+  min-width: 0;
+  text-align: right;
+}
+.lg-hc > .lg-h {
+  display: block;
+  width: 100%;
+}
+.lg-hc > span.lg-h {
+  padding: 1px 6px;
+}
+.lg-open,
+.pf-toggle {
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.lg-open {
+  display: flex;
+  font-weight: 600;
+}
+.pf-toggle {
+  width: 100%;
+  font-weight: 600;
+}
+.lg-open::after,
+.pf-toggle::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+.lg-open:focus-visible,
+.pf-toggle:focus-visible {
+  outline: none;
+}
+.lg-open:focus-visible::after,
+.pf-toggle:focus-visible::after {
+  outline: 2px solid var(--text);
+  outline-offset: -2px;
+}
+.wsheet {
+  overscroll-behavior: contain;
+}
+/* White text on the light theme's tinted funding chips and amber latency label is unreadable. */
+.app[data-theme="light"] .fchip {
+  color: var(--text) !important;
+}
+.app[data-theme="light"] .exc-live.slow {
+  color: #8a6100;
+}
+
+@media (max-width: 767px) {
+  .cy-card .mw-card-h {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .cy-card .mw-card-h > div:first-child {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+  .cy-card .mw-card-a {
+    display: contents;
+  }
 }

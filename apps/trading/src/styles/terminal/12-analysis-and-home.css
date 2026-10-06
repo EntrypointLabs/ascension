@@ -1380,12 +1380,6 @@
   box-shadow: 0 16px 40px #00000073;
   pointer-events: none;
 }
-.mwc-tip.tip-r {
-  transform: translate(14px);
-}
-.mwc-tip.tip-l {
-  transform: translate(calc(-100% - 14px));
-}
 .tip-h {
   display: flex;
   justify-content: space-between;
@@ -1419,6 +1413,7 @@
   right: 0;
   bottom: 0;
   left: 0;
+  z-index: 2;
   cursor: crosshair;
   touch-action: pan-y;
 }
