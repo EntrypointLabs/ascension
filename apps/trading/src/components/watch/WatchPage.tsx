@@ -1,4 +1,6 @@
 import { Fragment } from "react";
+import { IconToggle } from "@/components/common/IconToggle";
+import { InfoTip } from "@/components/common/InfoTip";
 import { ExchangesView } from "@/components/watch/ExchangesView";
 import { FundingView } from "@/components/watch/FundingView";
 import { MarketsView } from "@/components/watch/MarketsView";
@@ -19,47 +21,18 @@ export function WatchPage({ vm }: { vm: TerminalViewModel }) {
             </p>
           </div>
           <div className="wh-r">
-            <div className="seg-sm wviews" role="tablist" aria-label="View">
-              {(vm.wviews || []).map((wview: any, i: any) => (
-                <Fragment key={i}>
-                  <button
-                    type="button"
-                    role="tab"
-                    className={wview?.cls}
-                    aria-selected={wview?.pressed}
-                    onClick={wview?.pick}
-                  >
-                    {wview?.label}
-                  </button>
-                </Fragment>
-              ))}
-            </div>
+            <IconToggle items={vm.wviews} label="View" className="seg-sm wviews" />
           </div>
         </header>
-        <div className="mw-sticky" role="tablist" aria-label="View">
-          {(vm.wviews || []).map((wview: any, i: any) => (
-            <Fragment key={i}>
-              <button
-                type="button"
-                role="tab"
-                className={wview?.cls}
-                aria-selected={wview?.pressed}
-                onClick={wview?.pick}
-              >
-                {wview?.label}
-              </button>
-            </Fragment>
-          ))}
-        </div>
+        {/* Phone-only full-width copy of the view toggle. */}
+        <IconToggle items={vm.wviews} label="View" className="mw-sticky" />
         <div className="mw-kpis">
           {(vm.mw?.kpis || []).map((kpi: any, i: any) => (
             <Fragment key={i}>
               <div className="mw-kpi">
                 <span className="kp-l">
                   {kpi?.label}
-                  <span className="kp-help" tabIndex={0} role="note" aria-label={kpi?.help}>
-                    ?<span className="kp-tip">{kpi?.help}</span>
-                  </span>
+                  <InfoTip tip={kpi?.help} />
                 </span>
                 <b className="num">{kpi?.value}</b>
                 {kpi != null && kpi.hasSpark ? (
