@@ -138,6 +138,13 @@
 .st-tab.is-on span {
   color: var(--text-4);
 }
+.srch .st-tab.is-on {
+  border-style: solid;
+}
+.srch .st-tab:focus-visible {
+  outline: 2px solid var(--text);
+  outline-offset: 2px;
+}
 .srch-body {
   flex: 1;
   min-height: 0;
@@ -215,9 +222,30 @@
   text-align: left;
   color: var(--text);
 }
-.sr-row:hover,
+.sr-row {
+  cursor: pointer;
+}
 .sr-row.is-active {
   background: var(--raised);
+}
+.ss-sort {
+  justify-self: end;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: right;
+  cursor: pointer;
+}
+.ss-sort:hover,
+.ss-sort.is-on {
+  color: var(--text);
+}
+.ss-sort:focus-visible {
+  outline: 2px solid var(--text);
+  outline-offset: 2px;
+  border-radius: 2px;
 }
 .sr-row .logo {
   width: 36px;
@@ -266,11 +294,10 @@
   text-align: right;
   font-size: 13px;
 }
-.ss-more {
-  margin: 4px 12px 6px;
-  padding: 0;
-  border: 0;
-  background: transparent;
+.sr-row.ss-more {
+  display: block;
+  min-height: 0;
+  padding: 8px 12px;
   color: var(--down);
   font-size: 13px;
   font-weight: 600;
@@ -320,7 +347,7 @@
   .sr-row {
     grid-template-columns: 36px minmax(0, 2fr) repeat(3, minmax(90px, 1fr));
   }
-  .ss-head span:last-child,
+  .ss-head > :last-child,
   .sr-row > span:last-child {
     display: none;
   }
@@ -348,13 +375,13 @@
     padding-left: 16px;
   }
   .srch-input input {
-    font-size: 15px;
+    font-size: 16px;
   }
   .ss-head,
   .sr-row {
     grid-template-columns: 36px minmax(0, 1fr) auto;
   }
-  .ss-head span,
+  .ss-head > :not(b),
   .sr-row > .sr-c {
     display: none;
   }

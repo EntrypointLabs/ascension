@@ -2919,32 +2919,64 @@ export function buildViewModel(terminal: Terminal) {
         : state.ptab === "ohist"
           ? orderHistoryPage.pager
           : { show: false, pages: [], sizes: [] };
-  var searchQuery2 = (state.sq || "").trim().toLowerCase();
-  const searchTab = state.stab || "all";
+  const searchOpen = !!state.srch;
+  const paletteQuery = (state.sq || "").trim().toLowerCase();
+  const searchTabs = [
+    ["all", "All"],
+    ["markets", "Markets"],
+    ["gainers", "Top gainers"],
+    ["losers", "Top losers"],
+    ["new", "Newly listed"],
+    ["venues", "Venues"],
+    ["positions", "Positions"],
+  ];
+  const searchTab = searchTabs.some((tab) => tab[0] === state.stab) ? state.stab : "all";
+  const marketSort = state.ssort || "vol";
   function searchState(overrides?: any) {
     return { srch: false, sq: "", sIdx: 0, sMore: null, ...(overrides || {}) };
   }
   function matchesQuery(value: any) {
-    return !searchQuery2 || String(value).toLowerCase().indexOf(searchQuery2) > -1;
+    return !paletteQuery || String(value).toLowerCase().indexOf(paletteQuery) > -1;
   }
-  const matchedVenueIds = VENUES.filter(
-    (venue) => searchQuery2 && venue.name.toLowerCase().indexOf(searchQuery2) > -1,
-  ).map((venue) => venue.id);
-  const matchedMarkets = MARKETS.filter(
-    (market2) =>
-      matchesQuery(market2.sym) ||
-      matchesQuery(market2.name) ||
-      matchesQuery(market2.cat) ||
-      (matchedVenueIds.length &&
-        (!market2.venues ||
-          market2.venues.some((venueId) => matchedVenueIds.indexOf(venueId) > -1))),
-  ).sort(
-    (a, b) =>
-      (searchQuery2 &&
-        (a.sym.toLowerCase().indexOf(searchQuery2) === 0 ? -1 : 0) -
-          (b.sym.toLowerCase().indexOf(searchQuery2) === 0 ? -1 : 0)) ||
-      parseCompact(b.vol) - parseCompact(a.vol),
+  if (!searchOpen) {
+    self._sChg = null;
+  } else if (!self._sChg) {
+    self._sChg = {};
+    MARKETS.forEach((market2) => {
+      self._sChg[market2.sym] = market2.chg;
+    });
+  }
+  const frozenChange = (market2: any) =>
+    self._sChg && market2.sym in self._sChg ? self._sChg[market2.sym] : market2.chg;
+  const venueQuery = paletteQuery.length >= 2 ? paletteQuery : "";
+  const matchedVenues = VENUES.filter(
+    (venue) => venueQuery && venue.name.toLowerCase().indexOf(venueQuery) > -1,
   );
+  function venuesListing(market2: any) {
+    return matchedVenues.filter(
+      (venue) => !market2.venues || market2.venues.indexOf(venue.id) > -1,
+    );
+  }
+  const marketSortValue: any = {
+    vol: (market2: any) => getMarketStats2(market2).w0.vol,
+    oi: (market2: any) => getMarketStats2(market2).w0.oi,
+    fund: (market2: any) => getMarketStats2(market2).fAvg,
+  };
+  const matchedMarkets = !searchOpen
+    ? []
+    : MARKETS.filter(
+        (market2) =>
+          matchesQuery(market2.sym) ||
+          matchesQuery(market2.name) ||
+          matchesQuery(market2.cat) ||
+          venuesListing(market2).length > 0,
+      ).sort(
+        (a, b) =>
+          (paletteQuery &&
+            (a.sym.toLowerCase().indexOf(paletteQuery) === 0 ? -1 : 0) -
+              (b.sym.toLowerCase().indexOf(paletteQuery) === 0 ? -1 : 0)) ||
+          marketSortValue[marketSort](b) - marketSortValue[marketSort](a),
+      );
   const listingDates: any = {
     US30: [2026, 8, 28],
     USDJPY: [2026, 8, 24],
@@ -2980,21 +3012,28 @@ export function buildViewModel(terminal: Terminal) {
     "Dec",
   ];
   const marketResults = matchedMarkets.map((market2) => {
-    const funding = getMarketStats(market2).fund;
+    const funding = getMarketStats2(market2).fAvg;
+    const directMatch =
+      matchesQuery(market2.sym) || matchesQuery(market2.name) || matchesQuery(market2.cat);
+    const listedOn = directMatch ? [] : venuesListing(market2);
     return {
       kind: "market",
       logo: LOGOS[market2.sym.toLowerCase()],
       title: market2.sym + "-PERP",
       hasTag: true,
       tag: market2.max + "x",
-      sub: market2.name + ", " + market2.cat,
+      sub:
+        market2.name +
+        ", " +
+        market2.cat +
+        (listedOn.length ? ", on " + listedOn.map((venue) => venue.name).join(", ") : ""),
       mk: market2,
       c1: "$" + formatPrice(market2.price),
       c1sub: formatChange(market2.chg),
       c1subCls: market2.chg >= 0 ? "up" : "down",
-      c2: market2.vol,
-      c3: market2.oi,
-      c4: (funding >= 0 ? "+" : "") + funding.toFixed(4) + "%",
+      c2: "$" + formatCompact(getMarketStats2(market2).w0.vol),
+      c3: "$" + formatCompact(getMarketStats2(market2).w0.oi),
+      c4: formatPct(funding, 4),
       c4Cls: funding >= 0 ? "" : "down",
       open: () => {
         self.setState(searchState());
@@ -3002,97 +3041,103 @@ export function buildViewModel(terminal: Terminal) {
       },
     };
   });
-  const venueResults = VENUES.filter((venue) => {
-    const venueMeta2 = venueMeta[venue.id];
-    return (
-      matchesQuery(venue.name) || matchesQuery(venueMeta2.type) || matchesQuery(venueMeta2.chain)
-    );
-  }).map((venue: any) => {
-    const venueMeta2 = venueMeta[venue.id];
-    const venueStats = venueRows2.filter((stats) => stats.name === venue.name)[0];
-    return {
-      kind: "venue",
-      logo: venue.logo,
-      title: venue.name,
-      hasTag: true,
-      tag: venueMeta2.type,
-      sub: venueMeta2.chain + ", " + venueStats.markets + " markets",
-      c1: venueStats.vol,
-      c1sub: "24h volume",
-      c1subCls: "muted",
-      c2: venueStats.oi,
-      c3: venueStats.fMin + " to " + venueStats.fMax,
-      c4: venueStats.lat,
-      c4Cls: venueMeta2.ok ? "" : "down",
-      open: () => {
-        self.setState(searchState({ screen: "watch", wview: "exchanges", watchOpen: null }));
-      },
-    };
-  });
-  const positionResults = positionRows
-    .filter(
-      (position: any) =>
-        matchesQuery(position.sym) ||
-        matchesQuery(position.venueName) ||
-        matchesQuery(position.sideLabel),
-    )
-    .map((position: any) => ({
-      kind: "position",
-      logo: position.logo,
-      title: position.sym + "-PERP",
-      hasTag: true,
-      tag: position.levText,
-      sub:
-        position.sideLabel + " on " + position.venueName + (isPropAccount ? ", prop account" : ""),
-      c1: position.pnlText,
-      c1sub: position.roeText,
-      c1subCls: position.pnlCls,
-      c1Cls: position.pnlCls,
-      c2: position.sizeText,
-      c3: position.valueText,
-      c4: position.liqText,
-      c4Cls: "",
-      open: () => {
-        self.setState(searchState());
-        makeSelectMarket(position.sym, position.venueId)();
-      },
-    }));
-  function getSectionLimit(sectionKey: any, defaultLimit: any) {
-    if (state.sMore === sectionKey || searchQuery2) {
-      return 50;
-    } else {
-      return defaultLimit;
-    }
-  }
-  var searchSections: any[] = [];
+  const venueResults = !searchOpen
+    ? []
+    : VENUES.filter((venue) => {
+        const venueMeta2 = venueMeta[venue.id];
+        return (
+          matchesQuery(venue.name) ||
+          matchesQuery(venueMeta2.type) ||
+          matchesQuery(venueMeta2.chain)
+        );
+      }).map((venue: any) => {
+        const venueMeta2 = venueMeta[venue.id];
+        const venueStats = venueRows2.filter((stats) => stats.name === venue.name)[0];
+        return {
+          kind: "venue",
+          logo: venue.logo,
+          title: venue.name,
+          hasTag: true,
+          tag: venueMeta2.type,
+          sub: venueMeta2.chain + ", " + venueStats.markets + " markets",
+          c1: "$" + venueStats.volN,
+          c1sub: "",
+          c1subCls: "",
+          c2: "$" + venueStats.oiN,
+          c3: venueStats.fMin + " to " + venueStats.fMax,
+          c4: venueStats.lat,
+          c4Cls: venueMeta2.ok ? "" : "down",
+          open: () => {
+            self.setState(
+              searchState({
+                screen: "watch",
+                wview: "exchanges",
+                watchOpen: null,
+                xq: venue.name,
+                xcat: "all",
+                tpg: firstPage("venues"),
+              }),
+            );
+          },
+        };
+      });
+  const positionResults = !searchOpen
+    ? []
+    : positionRows
+        .filter(
+          (position: any) =>
+            matchesQuery(position.sym) ||
+            matchesQuery(position.venueName) ||
+            matchesQuery(position.sideLabel),
+        )
+        .map((position: any) => ({
+          kind: "position",
+          logo: position.logo,
+          title: position.sym + "-PERP",
+          hasTag: true,
+          tag: position.levText,
+          sub:
+            position.sideLabel +
+            " on " +
+            position.venueName +
+            (isPropAccount ? ", prop account" : ""),
+          c1: position.pnlText,
+          c1sub: position.roeText,
+          c1subCls: position.pnlCls,
+          c2: position.sizeText,
+          c3: position.valueText,
+          c4: position.liqText,
+          c4Cls: "",
+          open: () => {
+            self.setState(searchState());
+            makeSelectMarket(position.sym, position.venueId)();
+          },
+        }));
+  const searchSections: any[] = [];
   function addSection(key: any, title: any, headers: any, items: any, collapsedLimit: any) {
-    if (items.length) {
-      const limit = searchTab === "all" ? getSectionLimit(key, collapsedLimit) : 50;
-      searchSections.push({
-        key: key,
-        title: title,
-        h1: headers[0],
-        h2: headers[1],
-        h3: headers[2],
-        h4: headers[3],
-        items: items.slice(0, limit),
-        hasMore: items.length > limit,
-        moreText: "Show all " + items.length,
-        more: () => {
+    if (!items.length) {
+      return;
+    }
+    const limit =
+      searchTab === "all" && state.sMore !== key && !paletteQuery ? collapsedLimit : items.length;
+    const shown = items.slice(0, limit);
+    if (items.length > limit) {
+      shown.push({
+        kind: "more",
+        title: "Show all " + items.length,
+        open: () => {
           self.setState({ sMore: key });
         },
       });
     }
+    searchSections.push({ key: key, title: title, headers: headers, items: shown });
   }
-  function sortMarketResults(getValue: any, direction: any) {
-    return marketResults.slice().sort((a, b) => (getValue(b.mk) - getValue(a.mk)) * direction);
-  }
-  const gainers = sortMarketResults((market2: any) => market2.chg, 1).filter(
-    (result) => result.mk.chg > 0,
-  );
-  const losers = sortMarketResults((market2: any) => market2.chg, -1).filter(
-    (result) => result.mk.chg < 0,
-  );
+  const gainers = marketResults
+    .filter((result) => frozenChange(result.mk) > 0)
+    .sort((a, b) => frozenChange(b.mk) - frozenChange(a.mk));
+  const losers = marketResults
+    .filter((result) => frozenChange(result.mk) < 0)
+    .sort((a, b) => frozenChange(a.mk) - frozenChange(b.mk));
   const newListings = marketResults
     .filter((result) => listingDates[result.mk.sym])
     .sort((a, b) => getListingTime(b.mk.sym) - getListingTime(a.mk.sym))
@@ -3108,38 +3153,24 @@ export function buildViewModel(terminal: Terminal) {
           listedDate.getUTCDate(),
       };
     });
-  const topByVolume = sortMarketResults((market2: any) => parseCompact(market2.vol), 1);
-  const topByOpenInterest = sortMarketResults((market2: any) => parseCompact(market2.oi), 1);
   const marketHeaders = ["Price", "24h Volume", "Open Interest", "Funding, 1h"];
   if (searchTab === "all" || searchTab === "markets") {
     addSection(
       "markets",
-      searchQuery2 ? "Markets" : "Most traded markets",
+      paletteQuery ? "Markets" : "Most traded markets",
       marketHeaders,
       marketResults,
       5,
     );
   }
   if (searchTab === "gainers") {
-    addSection("gainers", "Top gainers, 24h", marketHeaders, gainers, 50);
+    addSection("gainers", "Top gainers, 24h", marketHeaders, gainers, 0);
   }
   if (searchTab === "losers") {
-    addSection("losers", "Top losers, 24h", marketHeaders, losers, 50);
+    addSection("losers", "Top losers, 24h", marketHeaders, losers, 0);
   }
   if (searchTab === "new") {
-    addSection("new", "Newly listed", marketHeaders, newListings, 50);
-  }
-  if (searchTab === "volume") {
-    addSection("volume", "Top volume, all venues combined", marketHeaders, topByVolume, 50);
-  }
-  if (searchTab === "oi") {
-    addSection(
-      "oi",
-      "Top open interest, all venues combined",
-      marketHeaders,
-      topByOpenInterest,
-      50,
-    );
+    addSection("new", "Newly listed", marketHeaders, newListings, 0);
   }
   if (searchTab === "all" || searchTab === "venues") {
     addSection(
@@ -3160,17 +3191,32 @@ export function buildViewModel(terminal: Terminal) {
     );
   }
   const flatItems: any[] = [];
-  const activeIndex = state.sIdx || 0;
   searchSections.forEach((section: any) => {
     section.items.forEach((item: any) => {
-      item.cls = "sr-row" + (flatItems.length === activeIndex ? " is-active" : "");
+      item.index = flatItems.length;
+      item.id = "sr-opt-" + flatItems.length;
       flatItems.push(item);
     });
   });
-  self._sItems = flatItems;
+  const activeIndex = Math.max(0, Math.min(state.sIdx || 0, flatItems.length - 1));
+  flatItems.forEach((item: any) => {
+    const isActive = item.index === activeIndex;
+    item.selected = isActive;
+    item.cls =
+      (item.kind === "more" ? "sr-row ss-more" : "sr-row") + (isActive ? " is-active" : "");
+    item.hover = () => {
+      if ((self.state.sIdx || 0) !== item.index) {
+        self.setState({ sIdx: item.index });
+      }
+    };
+  });
+  const resultCount = flatItems.filter((item: any) => item.kind !== "more").length;
+  function moveSearchIndex(index: number) {
+    self.setState({ sIdx: Math.max(0, Math.min(flatItems.length - 1, index)) });
+  }
   const searchView = {
-    isOpen: !!state.srch,
-    openStr: state.srch ? "true" : "false",
+    isOpen: searchOpen,
+    openStr: searchOpen ? "true" : "false",
     q: state.sq || "",
     kbd:
       typeof navigator !== "undefined" && /Mac|iPhone|iPad/.test(navigator.platform || "")
@@ -3185,70 +3231,71 @@ export function buildViewModel(terminal: Terminal) {
     onQ: (e: any) => {
       self.setState({ sq: e.target.value, sIdx: 0, sMore: null });
     },
-    tabs: [
-      ["all", "All", marketResults.length + venueResults.length + positionResults.length],
-      ["markets", "Markets", marketResults.length],
-      ["gainers", "Top gainers", gainers.length],
-      ["losers", "Top losers", losers.length],
-      ["new", "Newly listed", newListings.length],
-      ["volume", "Top volume", topByVolume.length],
-      ["oi", "Top OI", topByOpenInterest.length],
-      ["venues", "Venues", venueResults.length],
-      ["positions", "Positions", positionResults.length],
-    ].map((tab) => {
+    onKey: (e: any) => {
+      if (e.key === "ArrowDown") {
+        e.preventDefault();
+        moveSearchIndex(activeIndex + 1);
+      } else if (e.key === "ArrowUp") {
+        e.preventDefault();
+        moveSearchIndex(activeIndex - 1);
+      } else if (e.key === "PageDown") {
+        e.preventDefault();
+        moveSearchIndex(activeIndex + 8);
+      } else if (e.key === "PageUp") {
+        e.preventDefault();
+        moveSearchIndex(activeIndex - 8);
+      } else if (e.key === "Enter" && flatItems[activeIndex]) {
+        e.preventDefault();
+        flatItems[activeIndex].open();
+      }
+    },
+    listId: "srch-list",
+    activeId: flatItems.length ? flatItems[activeIndex].id : undefined,
+    status: paletteQuery ? resultCount + (resultCount === 1 ? " result" : " results") : "",
+    tabs: searchTabs.map((tab) => {
       const isActive = searchTab === tab[0];
+      const count =
+        tab[0] === "all"
+          ? marketResults.length + venueResults.length + positionResults.length
+          : tab[0] === "markets"
+            ? marketResults.length
+            : tab[0] === "gainers"
+              ? gainers.length
+              : tab[0] === "losers"
+                ? losers.length
+                : tab[0] === "new"
+                  ? newListings.length
+                  : tab[0] === "venues"
+                    ? venueResults.length
+                    : positionResults.length;
       return {
+        id: "st-" + tab[0],
         label: tab[1],
-        count: String(tab[2]),
+        count: String(count),
         cls: "st-tab" + (isActive ? " is-on" : ""),
-        pressed: isActive ? "true" : "false",
+        selected: isActive,
         pick: () => {
           self.setState({ stab: tab[0], sIdx: 0, sMore: null });
         },
       };
     }),
-    showQuick: !searchQuery2 && searchTab === "all",
-    quick: [
-      {
-        label: "Biggest Movers",
-        sub: "Sorted by 24h change",
-        go: () => {
-          self.setState(
-            searchState({
-              screen: "watch",
-              wview: "markets",
-              wsort: "chg",
-              wdir: -1,
-              watchOpen: null,
-            }),
-          );
-        },
-      },
-      {
-        label: "Funding Opportunities",
-        sub: "Best carry by market",
-        go: () => {
-          self.setState(searchState({ screen: "watch", wview: "funding", watchOpen: null }));
-        },
-      },
-      {
-        label: "Venue Health",
-        sub: "Feeds and latency",
-        go: () => {
-          self.setState(searchState({ screen: "watch", wview: "exchanges", watchOpen: null }));
-        },
-      },
-      {
-        label: "Prop dashboard",
-        sub: "Limits and payout",
-        hide: !isPropAccount,
-        go: () => {
-          self.setState(searchState({ screen: "prop" }));
-        },
-      },
-    ].filter((action) => !action.hide),
+    activeTabId: "st-" + searchTab,
+    sorts:
+      searchTab === "markets"
+        ? [
+            ["vol", "24h Volume"],
+            ["oi", "Open Interest"],
+            ["fund", "Funding, 1h"],
+          ].map((sort) => ({
+            label: sort[1],
+            sorted: marketSort === sort[0],
+            pick: () => {
+              self.setState({ ssort: sort[0], sIdx: 0 });
+            },
+          }))
+        : null,
     sections: searchSections,
-    empty: !!searchQuery2 && flatItems.length === 0,
+    empty: !!paletteQuery && flatItems.length === 0,
   };
   let chartView = state.cv || "price";
   if (chartView === "socials") {
