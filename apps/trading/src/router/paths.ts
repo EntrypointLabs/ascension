@@ -5,7 +5,15 @@ import type { Screen } from "@/terminal/types";
 export const WATCH_VIEWS = ["markets", "exchanges", "funding"] as const;
 export const LIQUIDITY_VIEWS = ["vaults", "analytics"] as const;
 
-export const ROUTED_KEYS = ["screen", "sym", "wview", "watchOpen", "lqView", "account"] as const;
+export const ROUTED_KEYS = [
+  "screen",
+  "sym",
+  "wview",
+  "watchOpen",
+  "lqView",
+  "account",
+  "profile",
+] as const;
 export type RouteState = Partial<Pick<TerminalState, (typeof ROUTED_KEYS)[number]>>;
 
 const SYMBOLS = new Map(MARKETS.map((market) => [market.sym.toLowerCase(), market.sym]));
@@ -24,11 +32,12 @@ export function routeFromUrl(pathname: string, search: string): RouteState | nul
     case undefined:
       return { screen: "home" };
     case "trade": {
+      const account = new URLSearchParams(search).get("account") === "prop" ? "prop" : "live";
       if (!param) {
-        return { screen: "detail" };
+        return { screen: "detail", account };
       }
       const sym = marketParam(param);
-      return sym ? { screen: "detail", sym } : null;
+      return sym ? { screen: "detail", sym, account } : null;
     }
     case "watch": {
       const wview = param || "markets";
@@ -51,7 +60,7 @@ export function routeFromUrl(pathname: string, search: string): RouteState | nul
     case "prop":
       return param ? null : { screen: "prop", account: "prop" };
     case "profile":
-      return param ? null : { screen: "profile" };
+      return param ? null : { screen: "profile", profile: true };
     default:
       return null;
   }
@@ -59,7 +68,7 @@ export function routeFromUrl(pathname: string, search: string): RouteState | nul
 
 export function urlFromState(state: TerminalState, isMobile: boolean): string {
   const screen: Screen = state.screen;
-  const trade = "/trade/" + state.sym;
+  const trade = "/trade/" + state.sym + (state.account === "prop" ? "?account=prop" : "");
   switch (screen) {
     case "home":
       return isMobile ? "/" : trade;
@@ -73,7 +82,7 @@ export function urlFromState(state: TerminalState, isMobile: boolean): string {
     case "prop":
       return state.account === "prop" ? "/prop" : isMobile ? "/" : trade;
     case "profile":
-      return "/profile";
+      return isMobile || state.profile ? "/profile" : trade;
     default:
       return trade;
   }
