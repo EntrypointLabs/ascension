@@ -34,10 +34,10 @@ export const VENUES: Venue[] = VENUE_SEEDS.map((venue) => ({
 }));
 
 export const VENUE_COLORS: Record<string, string> = {
-  binance: "var(--v1)",
-  bybit: "var(--v2)",
-  hyperliquid: "var(--v3)",
-  lighter: "var(--v4)",
-  variational: "var(--v5)",
-  gmx: "var(--v6)",
+  binance: "#e5b75a",
+  bybit: "#c9c9c7",
+  hyperliquid: "#4fd1b8",
+  lighter: "#3b6ff6",
+  variational: "#b49cff",
+  gmx: "#7c5cff",
 };

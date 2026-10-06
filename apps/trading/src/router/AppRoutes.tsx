@@ -3,6 +3,7 @@ import { Route, Routes } from "react-router";
 import { PageFallback, PageErrorBoundary } from "@/components/common/PageFallback";
 import { HomePage } from "@/components/home/HomePage";
 import { TradeLayout } from "@/components/trade/TradeLayout";
+import { usePageScroll } from "@/router/usePageScroll";
 import type { TerminalViewModel } from "@/terminal/types";
 
 const WatchRoute = lazy(() => import("@/router/WatchRoute"));
@@ -14,6 +15,7 @@ const PropPage = lazy(() =>
 );
 
 export function AppRoutes({ vm }: { vm: TerminalViewModel }) {
+  usePageScroll();
   const trade = <TradeLayout vm={vm} />;
   return (
     <PageErrorBoundary resetKey={vm.screen}>

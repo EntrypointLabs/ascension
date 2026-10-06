@@ -1,9 +1,19 @@
+const oneDecimal = new Intl.NumberFormat("en-US", {
+  minimumFractionDigits: 1,
+  maximumFractionDigits: 1,
+});
+const twoDecimals = new Intl.NumberFormat("en-US", {
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+});
+const wholeNumber = new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 });
+
 export function formatPrice(price: number): string {
   const absPrice = Math.abs(price);
   if (absPrice >= 10000) {
-    return price.toLocaleString("en-US", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+    return oneDecimal.format(price);
   } else if (absPrice >= 1000) {
-    return price.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    return twoDecimals.format(price);
   } else if (absPrice >= 100) {
     return price.toFixed(3);
   } else if (absPrice >= 1) {
@@ -15,9 +25,7 @@ export function formatPrice(price: number): string {
   }
 }
 export function formatUsd(amount: number): string {
-  return (
-    "$" + amount.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-  );
+  return "$" + twoDecimals.format(amount);
 }
 export function formatCompact(value: number): string {
   if (value >= 1000000000) {
@@ -49,7 +57,7 @@ export function formatQty(qty: number): string {
   if (qty >= 1000000) {
     return (qty / 1000000).toFixed(1) + "M";
   } else if (qty >= 1000) {
-    return qty.toLocaleString("en-US", { maximumFractionDigits: 0 });
+    return wholeNumber.format(qty);
   } else if (qty >= 1) {
     return String(Math.round(qty * 10000) / 10000);
   } else {
@@ -57,8 +65,5 @@ export function formatQty(qty: number): string {
   }
 }
 export function formatSignedUsd(amount: number): string {
-  return (
-    (amount >= 0 ? "+$" : "-$") +
-    Math.abs(amount).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-  );
+  return (amount >= 0 ? "+$" : "-$") + twoDecimals.format(Math.abs(amount));
 }

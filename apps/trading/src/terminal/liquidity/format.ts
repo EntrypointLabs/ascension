@@ -27,12 +27,14 @@ export function monthTick(ms: number, isFirst: boolean): string {
   );
 }
 
+const usdcFormat = new Intl.NumberFormat("en-US", {
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+});
+
 /** USDC amount with two decimals and thousands separators: "2,577.65". */
 export function formatUsdc(amount: number): string {
-  return Number(amount).toLocaleString("en-US", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  });
+  return usdcFormat.format(Number(amount));
 }
 
 /** Two-decimal compact amount: "3.35M", "658.74K", "512.00". */

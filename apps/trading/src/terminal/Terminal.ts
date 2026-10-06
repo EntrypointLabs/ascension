@@ -117,6 +117,8 @@ export class Terminal extends Store<AppProps, TerminalState> {
       ppAcct: props.initialPropAccount || "c50",
       wdtab: props.initialWdtab || "venues",
       wq: "",
+      xq: "",
+      fq: "",
       wcat: "all",
       wsort: "oi",
       wdir: -1,
