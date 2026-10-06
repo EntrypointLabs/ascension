@@ -13,6 +13,7 @@ import { ShareSheet } from "@/components/overlays/ShareSheet";
 import { Toast } from "@/components/overlays/Toast";
 import { TpSlSheet } from "@/components/overlays/TpSlSheet";
 import { MobileBar } from "@/components/shell/MobileBar";
+import { SkipLink } from "@/components/shell/SkipLink";
 import { TabBar } from "@/components/shell/TabBar";
 import { Ticker } from "@/components/shell/Ticker";
 import { Topbar } from "@/components/shell/Topbar";
@@ -36,6 +37,7 @@ export function App(props: any) {
       data-account={vm.account}
       data-wsheet={vm.wsheetState}
     >
+      <SkipLink />
       <Topbar vm={vm} />
       <Ticker vm={vm} />
       <AppRoutes vm={vm} />

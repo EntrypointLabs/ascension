@@ -1,3 +1,6 @@
+import { useRef } from "react";
+import { scrollBehavior } from "@/components/common/motion";
+
 /** Page controls as produced by the view model's `paginate`. */
 export interface PagerModel {
   text?: string;
@@ -9,10 +12,28 @@ export interface PagerModel {
   nums?: { label: string; cls: string; cur: string; go: () => void }[];
 }
 
-/** "1 to 10 of 31" with previous, numbered and next page buttons (`.pgx`). */
-export function Pager({ pager }: { pager?: PagerModel }) {
+/** Table pager (`.pgx`); with `scrollTarget`, a page change scrolls that ancestor back into view. */
+export function Pager({ pager, scrollTarget }: { pager?: PagerModel; scrollTarget?: string }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const turn = (go?: () => void) => () => {
+    go?.();
+    if (!scrollTarget) {
+      return;
+    }
+    requestAnimationFrame(() => {
+      const target = ref.current?.closest<HTMLElement>(scrollTarget);
+      if (!target) {
+        return;
+      }
+      const scroller = target.closest<HTMLElement>(".page");
+      const top = scroller ? Math.max(0, scroller.getBoundingClientRect().top) : 0;
+      if (target.getBoundingClientRect().top < top) {
+        target.scrollIntoView({ block: "start", behavior: scrollBehavior() });
+      }
+    });
+  };
   return (
-    <div className="pgx num">
+    <div className="pgx num" ref={ref}>
       <span className="pgx-t">{pager?.text}</span>
       <span className="pgx-c">
         <button
@@ -20,7 +41,7 @@ export function Pager({ pager }: { pager?: PagerModel }) {
           className="pgx-a"
           aria-label="Previous page"
           disabled={!!pager?.prevDis}
-          onClick={pager?.prev}
+          onClick={turn(pager?.prev)}
         >
           <Chevron d="m15 18-6-6 6-6" />
         </button>
@@ -30,7 +51,7 @@ export function Pager({ pager }: { pager?: PagerModel }) {
             type="button"
             className={num.cls}
             aria-current={num.cur === "page" ? "page" : undefined}
-            onClick={num.go}
+            onClick={turn(num.go)}
           >
             {num.label}
           </button>
@@ -40,7 +61,7 @@ export function Pager({ pager }: { pager?: PagerModel }) {
           className="pgx-a"
           aria-label="Next page"
           disabled={!!pager?.nextDis}
-          onClick={pager?.next}
+          onClick={turn(pager?.next)}
         >
           <Chevron d="m9 18 6-6-6-6" />
         </button>

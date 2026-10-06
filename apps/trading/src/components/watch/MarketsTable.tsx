@@ -1,140 +1,89 @@
 import { Fragment } from "react";
-import { IconToggle } from "@/components/common/IconToggle";
+import { scrollBehavior } from "@/components/common/motion";
+import { MarketDetail } from "@/components/watch/MarketDetail";
+import type { MarketRow } from "@/components/watch/types";
 import { parseStyle } from "@/lib/style";
 import type { TerminalViewModel } from "@/terminal/types";
-import { LogoMark } from "@openfutures/ui";
+
+const COLUMNS = 10;
+
+interface SortModel {
+  cls?: string;
+  icon?: string;
+  go?: () => void;
+}
+
+function SortHeader({ sort, label }: { sort?: SortModel; label: string }) {
+  const active = !!sort?.cls && /\bis-active\b/.test(sort.cls);
+  const descending = sort?.icon === "m6 9 6 6 6-6";
+  return (
+    <div
+      role="columnheader"
+      aria-sort={active ? (descending ? "descending" : "ascending") : "none"}
+    >
+      <button type="button" className={`sort-btn ${sort?.cls ?? ""}`} onClick={sort?.go}>
+        {label}
+        <svg
+          width="10"
+          height="10"
+          viewBox="0 0 24 24"
+          strokeWidth="2.4"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden="true"
+          style={{ fill: "none", stroke: "currentColor" }}
+        >
+          <path d={sort?.icon} />
+        </svg>
+      </button>
+    </div>
+  );
+}
+
+function toggleRow(button: HTMLElement, isOpen: boolean | undefined, toggle?: () => void) {
+  toggle?.();
+  if (isOpen) {
+    return;
+  }
+  const group = button.closest(".wt-group");
+  requestAnimationFrame(() => {
+    const detail = group?.querySelector<HTMLElement>(".wt-detail");
+    detail?.scrollIntoView({ block: "nearest", behavior: scrollBehavior() });
+  });
+}
 
 export function MarketsTable({ vm }: { vm: TerminalViewModel }) {
+  const rows: MarketRow[] = vm.wrowsP || [];
   return (
     <div className="wt wt2 num" role="table" aria-label="Markets">
       <div className="wt-row wt-head" role="row">
         <div role="columnheader">
           <span className="rk">#</span>Market
         </div>
-        <div role="columnheader">
-          <button
-            type="button"
-            className={`sort-btn ${vm.ws?.price?.cls ?? ""}`}
-            onClick={vm.ws?.price?.go}
-          >
-            Price
-            <svg
-              width="10"
-              height="10"
-              viewBox="0 0 24 24"
-              strokeWidth="2.4"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-              style={{ fill: "none", stroke: "currentColor" }}
-            >
-              <path d={vm.ws?.price?.icon} />
-            </svg>
-          </button>
-        </div>
-        <div role="columnheader">
-          <button
-            type="button"
-            className={`sort-btn ${vm.ws?.chg?.cls ?? ""}`}
-            onClick={vm.ws?.chg?.go}
-          >
-            24h change
-            <svg
-              width="10"
-              height="10"
-              viewBox="0 0 24 24"
-              strokeWidth="2.4"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-              style={{ fill: "none", stroke: "currentColor" }}
-            >
-              <path d={vm.ws?.chg?.icon} />
-            </svg>
-          </button>
-        </div>
+        <SortHeader sort={vm.ws?.price} label="Price" />
+        <SortHeader sort={vm.ws?.chg} label="24h change" />
         <div role="columnheader">7 Days</div>
-        <div role="columnheader">
-          <button
-            type="button"
-            className={`sort-btn ${vm.ws?.vol?.cls ?? ""}`}
-            onClick={vm.ws?.vol?.go}
-          >
-            24h volume
-            <svg
-              width="10"
-              height="10"
-              viewBox="0 0 24 24"
-              strokeWidth="2.4"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-              style={{ fill: "none", stroke: "currentColor" }}
-            >
-              <path d={vm.ws?.vol?.icon} />
-            </svg>
-          </button>
-        </div>
-        <div role="columnheader">
-          <button
-            type="button"
-            className={`sort-btn ${vm.ws?.oi?.cls ?? ""}`}
-            onClick={vm.ws?.oi?.go}
-          >
-            Open interest
-            <svg
-              width="10"
-              height="10"
-              viewBox="0 0 24 24"
-              strokeWidth="2.4"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-              style={{ fill: "none", stroke: "currentColor" }}
-            >
-              <path d={vm.ws?.oi?.icon} />
-            </svg>
-          </button>
-        </div>
+        <SortHeader sort={vm.ws?.vol} label="24h volume" />
+        <SortHeader sort={vm.ws?.oi} label="Open interest" />
         <div role="columnheader">Open Interest by Venue</div>
-        <div role="columnheader">
-          <button
-            type="button"
-            className={`sort-btn ${vm.ws?.fund?.cls ?? ""}`}
-            onClick={vm.ws?.fund?.go}
-          >
-            Funding, 1h
-            <svg
-              width="10"
-              height="10"
-              viewBox="0 0 24 24"
-              strokeWidth="2.4"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-              style={{ fill: "none", stroke: "currentColor" }}
-            >
-              <path d={vm.ws?.fund?.icon} />
-            </svg>
-          </button>
-        </div>
+        <SortHeader sort={vm.ws?.fund} label="Funding, 1h" />
         <div role="columnheader">Venues</div>
         <div role="columnheader">
           <span className="sr">Trade</span>
         </div>
       </div>
-      {(vm.wrowsP || []).map((wrowsPItem: any, i: any) => {
+      {rows.map((row, i) => {
         return (
           <Fragment key={i}>
-            <div className={`wt-group ${wrowsPItem?.groupCls ?? ""}`} role="rowgroup">
+            <div className={`wt-group ${row?.groupCls ?? ""}`} role="rowgroup">
               <div className="wt-row" role="row">
                 <div role="cell">
-                  <span className="rk num">{wrowsPItem?.num}</span>
+                  <span className="rk num">{row?.num}</span>
                   <button
                     type="button"
                     className="wasset"
-                    aria-expanded={wrowsPItem?.isOpen}
-                    onClick={wrowsPItem?.toggle}
+                    aria-expanded={row?.isOpen}
+                    onClick={(event) => toggleRow(event.currentTarget, row?.isOpen, row?.toggle)}
                   >
                     <svg
                       className="wchev"
@@ -149,24 +98,24 @@ export function MarketsTable({ vm }: { vm: TerminalViewModel }) {
                     >
                       <path d="m9 6 6 6-6 6" />
                     </svg>
-                    <img className="logo sm" src={wrowsPItem?.logo} alt="" />
+                    <img className="logo sm" src={row?.logo} alt="" />
                     <span className="wname">
                       <b>
-                        {wrowsPItem?.sym}
-                        <span className="lev">{wrowsPItem?.lev}</span>
+                        {row?.sym}
+                        <span className="lev">{row?.lev}</span>
                       </b>
                       <small>
-                        {wrowsPItem?.name}
-                        <span className="cat">{wrowsPItem?.cat}</span>
+                        {row?.name}
+                        <span className="cat">{row?.cat}</span>
                       </small>
                     </span>
                   </button>
                 </div>
                 <div role="cell">
-                  <span className={wrowsPItem?.flash}>${wrowsPItem?.price}</span>
+                  <span className={row?.flash}>${row?.price}</span>
                 </div>
-                <div role="cell" className={wrowsPItem?.dir}>
-                  {wrowsPItem?.chgText}
+                <div role="cell" className={row?.dir}>
+                  {row?.chgText}
                 </div>
                 <div role="cell">
                   <svg
@@ -176,19 +125,19 @@ export function MarketsTable({ vm }: { vm: TerminalViewModel }) {
                     aria-hidden="true"
                   >
                     <path
-                      d={wrowsPItem?.spark}
+                      d={row?.spark}
                       strokeWidth="1.6"
                       strokeLinejoin="round"
                       vectorEffect="non-scaling-stroke"
-                      style={parseStyle(`fill: none; stroke: ${wrowsPItem?.sparkColor ?? ""}`)}
+                      style={parseStyle(`fill: none; stroke: ${row?.sparkColor ?? ""}`)}
                     />
                   </svg>
                 </div>
-                <div role="cell">{wrowsPItem?.vol}</div>
-                <div role="cell">{wrowsPItem?.oi}</div>
+                <div role="cell">{row?.vol}</div>
+                <div role="cell">{row?.oi}</div>
                 <div role="cell">
                   <span className="oibar" aria-hidden="true">
-                    {(wrowsPItem?.split || []).map((splitItem: any, i2: any) => (
+                    {(row?.split || []).map((splitItem, i2) => (
                       <Fragment key={i2}>
                         <i
                           style={parseStyle(
@@ -199,16 +148,16 @@ export function MarketsTable({ vm }: { vm: TerminalViewModel }) {
                     ))}
                   </span>
                   <small className="oitop">
-                    <img className="logo xxs" src={wrowsPItem?.topLogo} data-venue="1" alt="" />
-                    {wrowsPItem?.topText}
+                    <img className="logo xxs" src={row?.topLogo} data-venue="1" alt="" />
+                    {row?.topText}
                   </small>
                 </div>
-                <div role="cell" className={wrowsPItem?.fundCls}>
-                  {wrowsPItem?.fund}
+                <div role="cell" className={row?.fundCls}>
+                  {row?.fund}
                 </div>
                 <div role="cell">
                   <span className="stack">
-                    {(wrowsPItem?.venues || []).map((venue: any, i2: any) => (
+                    {(row?.venues || []).map((venue, i2) => (
                       <Fragment key={i2}>
                         <img
                           className="logo"
@@ -222,309 +171,22 @@ export function MarketsTable({ vm }: { vm: TerminalViewModel }) {
                   </span>
                 </div>
                 <div role="cell">
-                  <button type="button" className="mini" onClick={wrowsPItem?.trade}>
+                  <button type="button" className="mini" onClick={row?.trade}>
                     Trade
                   </button>
                 </div>
               </div>
-              {wrowsPItem != null && wrowsPItem.isOpen ? (
-                <>
-                  <div className="wt-detail">
-                    <div className="md">
-                      <div className="md-main">
-                        <div className="md-top">
-                          <dl className="md-stats num">
-                            {(vm.wd?.stats || []).map((stat: any, i2: any) => (
-                              <Fragment key={i2}>
-                                <div>
-                                  <dt>{stat?.label}</dt>
-                                  <dd className={stat?.cls}>{stat?.value}</dd>
-                                </div>
-                              </Fragment>
-                            ))}
-                          </dl>
-                          <div className="md-acts">
-                            <button
-                              type="button"
-                              className="btn btn-icon sm"
-                              aria-label={`Add ${vm.wd?.sym ?? ""}-PERP to watchlist`}
-                              aria-pressed={vm.wd?.favPressed}
-                              onClick={vm.wd?.toggleFav}
-                            >
-                              <svg
-                                width="18"
-                                height="18"
-                                viewBox="0 0 24 24"
-                                strokeWidth="1.6"
-                                strokeLinejoin="round"
-                                aria-hidden="true"
-                                style={parseStyle(
-                                  `fill: ${vm.wd?.favFill ?? ""}; stroke: currentColor`,
-                                )}
-                              >
-                                <path d="m12 3.5 2.6 5.3 5.9.9-4.3 4.1 1 5.8-5.2-2.8-5.2 2.8 1-5.8-4.3-4.1 5.9-.9z" />
-                              </svg>
-                            </button>
-                            <button
-                              type="button"
-                              className="btn btn-icon sm"
-                              aria-label={`Share ${vm.wd?.sym ?? ""}-PERP`}
-                              onClick={vm.wd?.share}
-                            >
-                              <svg
-                                width="18"
-                                height="18"
-                                viewBox="0 0 24 24"
-                                strokeWidth="1.8"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                aria-hidden="true"
-                                style={{ fill: "none", stroke: "currentColor" }}
-                              >
-                                <path d="M12 15V3" />
-                                <path d="m7 8 5-5 5 5" />
-                                <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7" />
-                              </svg>
-                            </button>
-                          </div>
-                        </div>
-                        <div className="md-chart-head">
-                          <div className="md-ct">
-                            <span>{vm.wd?.chart?.title}</span>
-                            <b className={`num ${vm.wd?.chart?.valCls ?? ""}`}>
-                              {vm.wd?.chart?.value}
-                            </b>
-                          </div>
-                          <IconToggle
-                            items={vm.wdmetrics}
-                            label="Chart"
-                            className="seg-sm"
-                            role="group"
-                          />
-                        </div>
-                        <div className="md-chart">
-                          <div className="wm" aria-hidden="true">
-                            <LogoMark />
-                            <span>OpenFutures</span>
-                          </div>
-                          {(vm.wd?.chart?.lines || []).map((line: any, i2: any) => (
-                            <Fragment key={i2}>
-                              <svg
-                                className="lc-svg"
-                                viewBox="0 0 1000 200"
-                                preserveAspectRatio="none"
-                                aria-hidden="true"
-                              >
-                                <path
-                                  d={line?.area}
-                                  style={parseStyle(`fill: ${line?.fill ?? ""}`)}
-                                />
-                                <path
-                                  d={line?.d}
-                                  strokeWidth="1.6"
-                                  strokeLinejoin="round"
-                                  vectorEffect="non-scaling-stroke"
-                                  style={parseStyle(`fill: none; stroke: ${line?.c ?? ""}`)}
-                                />
-                              </svg>
-                            </Fragment>
-                          ))}
-                          <svg
-                            className="lc-svg"
-                            viewBox="0 0 1000 200"
-                            preserveAspectRatio="none"
-                            aria-hidden="true"
-                          >
-                            <path d={vm.wd?.chart?.barsUp} style={{ fill: "var(--text)" }} />
-                            <path d={vm.wd?.chart?.barsDown} style={{ fill: "#d7303a" }} />
-                            <path
-                              d={vm.wd?.chart?.zero}
-                              strokeDasharray="3 5"
-                              vectorEffect="non-scaling-stroke"
-                              style={{ stroke: "var(--line-3)" }}
-                            />
-                          </svg>
-                          <span className="md-y top num">{vm.wd?.chart?.hi}</span>
-                          <span className="md-y bot num">{vm.wd?.chart?.lo}</span>
-                          {vm.wd?.chart?.tip?.show ? (
-                            <>
-                              <i
-                                className="mwc-vline"
-                                style={parseStyle(`left: ${vm.wd?.chart?.tip?.left ?? ""}%`)}
-                              />
-                              <div
-                                className={`${vm.wd?.chart?.tip?.side ?? ""} mwc-tip num`}
-                                style={parseStyle(`left: ${vm.wd?.chart?.tip?.left ?? ""}%`)}
-                              >
-                                <div className="tip-h">
-                                  <b>{vm.wd?.chart?.tip?.when}</b>
-                                </div>
-                                {(vm.wd?.chart?.tip?.rows || []).map((row: any, i2: any) => (
-                                  <Fragment key={i2}>
-                                    <div className="tip-r">
-                                      <span>
-                                        <i style={parseStyle(`background: ${row?.color ?? ""}`)} />
-                                        {row?.name}
-                                      </span>
-                                      <span>{row?.val}</span>
-                                    </div>
-                                  </Fragment>
-                                ))}
-                              </div>
-                            </>
-                          ) : null}
-                          <div
-                            className="mwc-hit"
-                            onPointerMove={vm.wd?.chart?.move}
-                            onPointerDown={vm.wd?.chart?.move}
-                            onPointerLeave={vm.wd?.chart?.leave}
-                          />
-                        </div>
-                        <div className="md-x num">
-                          {(vm.wd?.chart?.x || []).map((xItem: any, i2: any) => (
-                            <Fragment key={i2}>
-                              <span>{xItem?.t}</span>
-                            </Fragment>
-                          ))}
-                        </div>
-                        <div className="md-legend num">
-                          {(vm.wd?.chart?.legend || []).map((legendItem: any, i2: any) => (
-                            <Fragment key={i2}>
-                              <span>
-                                <i style={parseStyle(`background: ${legendItem?.c ?? ""}`)} />
-                                {legendItem?.label}
-                                <b>{legendItem?.value}</b>
-                              </span>
-                            </Fragment>
-                          ))}
-                        </div>
-                      </div>
-                      <aside className="md-side">
-                        <div className="md-side-head">
-                          <b>Exchanges</b>
-                          <span>By open interest</span>
-                        </div>
-                        <div className="md-ex-list">
-                          {(vm.wd?.ex || []).map((exItem: any, i2: any) => (
-                            <Fragment key={i2}>
-                              <button
-                                type="button"
-                                className={exItem?.cls}
-                                aria-pressed={exItem?.selected}
-                                onClick={exItem?.pick}
-                              >
-                                <img className="logo sm" src={exItem?.logo} data-venue="1" alt="" />
-                                <span className="mx-name">
-                                  <b>{exItem?.name}</b>
-                                  <small>{exItem?.native}</small>
-                                </span>
-                                <span className="mx-num num">
-                                  <b>{exItem?.price}</b>
-                                  <small className={exItem?.fundCls}>{exItem?.fund} APR</small>
-                                </span>
-                                <span className="mx-share num">
-                                  <i>
-                                    <span style={parseStyle(`width: ${exItem?.share ?? ""}%`)} />
-                                  </i>
-                                  <small>{exItem?.shareText}</small>
-                                </span>
-                              </button>
-                            </Fragment>
-                          ))}
-                        </div>
-                        <div className="md-sel">
-                          <div className="md-sel-head">
-                            <span className="xcell">
-                              <img
-                                className="logo xs"
-                                src={vm.wd?.sel?.logo}
-                                data-venue="1"
-                                alt=""
-                              />
-                              <b>{vm.wd?.sel?.name}</b>
-                              <span className={vm.wd?.sel?.dotCls} />
-                              <small className="num">{vm.wd?.sel?.lat}</small>
-                            </span>
-                            <IconToggle
-                              items={vm.wdsel}
-                              label="Exchange detail"
-                              className="seg-sm"
-                              role="group"
-                            />
-                          </div>
-                          {vm.wd?.selBook ? (
-                            <>
-                              <div className="vb-head">
-                                <div>
-                                  <span>Size</span>
-                                  <span>Bid</span>
-                                </div>
-                                <div>
-                                  <span>Ask</span>
-                                  <span>Size</span>
-                                </div>
-                              </div>
-                              {(vm.wd?.sel?.book || []).map((bookItem: any, i2: any) => (
-                                <Fragment key={i2}>
-                                  <div className="vb-row num">
-                                    <div className="vb-half bid">
-                                      <i style={parseStyle(`width: ${bookItem?.bd ?? ""}%`)} />
-                                      <span>{bookItem?.bs}</span>
-                                      <span className="up">{bookItem?.bp}</span>
-                                    </div>
-                                    <div className="vb-half ask">
-                                      <i style={parseStyle(`width: ${bookItem?.ad ?? ""}%`)} />
-                                      <span className="down">{bookItem?.ap}</span>
-                                      <span>{bookItem?.as}</span>
-                                    </div>
-                                  </div>
-                                </Fragment>
-                              ))}
-                              <div className="md-sel-foot num">
-                                <span>Spread {vm.wd?.sel?.spread}</span>
-                                <span>Basis {vm.wd?.sel?.basis}</span>
-                              </div>
-                            </>
-                          ) : null}
-                          {vm.wd?.selSpecs ? (
-                            <>
-                              <dl className="md-specs num">
-                                {(vm.wd?.sel?.specs || []).map((spec: any, i2: any) => (
-                                  <Fragment key={i2}>
-                                    <div>
-                                      <dt>{spec?.k}</dt>
-                                      <dd>{spec?.v}</dd>
-                                    </div>
-                                  </Fragment>
-                                ))}
-                              </dl>
-                            </>
-                          ) : null}
-                          <button
-                            type="button"
-                            className="btn btn-primary md-trade"
-                            onClick={vm.wd?.sel?.trade}
-                          >
-                            Trade {vm.wd?.sym} on {vm.wd?.sel?.name}
-                          </button>
-                        </div>
-                      </aside>
-                    </div>
+              {row?.isOpen ? (
+                <div className="wt-detail" role="row">
+                  <div role="cell" aria-colspan={COLUMNS}>
+                    <MarketDetail vm={vm} actions />
                   </div>
-                </>
+                </div>
               ) : null}
             </div>
           </Fragment>
         );
       })}
-      {vm.noW ? (
-        <>
-          <div className="dock-empty">
-            <b>No markets match</b>
-            <span>Try a ticker like ETH, US500 or Gold.</span>
-          </div>
-        </>
-      ) : null}
     </div>
   );
 }
