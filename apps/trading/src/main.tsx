@@ -18,7 +18,9 @@ function readHashProps(): AppProps {
 }
 
 createRoot(document.getElementById("root")!).render(
-  <BrowserRouter>
+  // Navigations commit at once so a lazy page shows its loading state and terminal state
+  // never runs ahead of the committed URL.
+  <BrowserRouter useTransitions={false}>
     <App {...readHashProps()} />
   </BrowserRouter>,
 );
