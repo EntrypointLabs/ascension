@@ -157,11 +157,21 @@
 
 .venue-flow__lane--right { flex-direction: row-reverse; }
 
-.venue-flow__lane--left { left: 0; }
-.venue-flow__lane--right { right: 0; }
+.venue-flow__lane--left { left: 24px; }
+.venue-flow__lane--right { right: 24px; }
 
 @media (max-width: 809.98px) {
   .venue-flow__lane { font-size: 11px; gap: 8px; }
+  .venue-flow__lane--left { left: 0; }
+  .venue-flow__lane--right { right: 0; }
   .venue-flow__lane img { width: 44px; height: 44px; border-radius: 10px; }
   .venue-flow__mark { width: 112px; height: 112px; }
+}
+
+.framer-p6b54j .framer-t5uapx {
+  overflow: hidden;
+}
+
+main.framer-1l49blv > .framer-e65gp1 {
+  padding-top: 0;
 }
