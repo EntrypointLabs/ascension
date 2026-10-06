@@ -55,6 +55,23 @@ export function TabBar({ vm }: { vm: TerminalViewModel }) {
         </svg>
         Watch
       </button>
+      <button type="button" className={vm.tb?.liquidity} onClick={vm.goLiquidity}>
+        <svg
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          strokeWidth="1.8"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden="true"
+          style={{ fill: "none", stroke: "currentColor" }}
+        >
+          <rect x="3" y="4" width="18" height="16" rx="2" />
+          <circle cx="12" cy="12" r="3.5" />
+          <path d="M12 8.5V7M12 17v-1.5M8.5 12H7M17 12h-1.5" />
+        </svg>
+        Liquidity
+      </button>
       <button type="button" className={vm.tb?.profile} onClick={vm.goProfile}>
         <span className="avatar xs">
           <img src={vm.pfp} alt="" />

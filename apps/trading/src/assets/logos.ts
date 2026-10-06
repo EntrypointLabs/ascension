@@ -17,6 +17,7 @@ import tsla from "./logos/tsla.svg?inline";
 import us100 from "./logos/us100.svg?inline";
 import us30 from "./logos/us30.svg?inline";
 import us500 from "./logos/us500.svg?inline";
+import usdc from "./logos/usdc.svg?inline";
 import usdjpy from "./logos/usdjpy.svg?inline";
 import variational from "./logos/variational.svg?inline";
 import wti from "./logos/wti.svg?inline";
@@ -46,6 +47,7 @@ export const LOGOS: Record<string, string> = {
   us100,
   us30,
   us500,
+  usdc,
   usdjpy,
   variational,
   wti,

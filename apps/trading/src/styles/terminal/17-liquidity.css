@@ -1,0 +1,1062 @@
+/* Liquidity screen: term vaults, the depositor's dock, and vault analytics.
+   Builds on the shared card, table, chart and sheet styles from the earlier partials. */
+
+/* ---- Screen ------------------------------------------------------------------------------ */
+
+.app[data-screen="liquidity"] .layout {
+  display: none !important;
+}
+.app[data-screen="liquidity"] .page-liq {
+  display: block;
+}
+.app[data-ai="shown"] .page-liq {
+  padding-bottom: 84px;
+}
+.page-liq .page-inner {
+  max-width: 1600px;
+}
+.page-liq .page-head {
+  margin-bottom: 18px;
+}
+.lq-lead {
+  margin: 4px 0 0;
+  font-size: 14px;
+  color: var(--text-3);
+}
+.lq-vaults {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.lq-vaults > .mw-card {
+  margin: 0;
+}
+
+/* The tab bar sizes itself to however many tabs it shows (four, or five in Prop mode). */
+.tabbar {
+  grid-template-columns: none;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+}
+
+/* Four desktop nav links plus the mode switch get tight between 768 and 960 px. */
+@media (min-width: 768px) and (max-width: 960px) {
+  .modesw-top .ms-ic {
+    display: none;
+  }
+  .modesw-top .ms-opt {
+    padding: 0 9px;
+  }
+  .topbar nav button {
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+}
+
+/* Link from the Prop header to the vaults that fund it. */
+.lq-link {
+  margin-top: 8px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text-2);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+.lq-link:hover {
+  color: var(--text);
+}
+
+/* ---- Vaults card ------------------------------------------------------------------------- */
+
+.lq-card,
+.lq-chart,
+.lq-traders {
+  position: relative;
+  overflow: visible;
+}
+.lq-head {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--line-2);
+}
+.lq-head h2 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+.lq-head .snap-btn {
+  margin-left: auto;
+}
+.lq-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 14px 24px;
+  border-bottom: 1px solid var(--line-2);
+}
+
+/* Term filter: a button that opens a searchable, multi-select menu. */
+.lq-dd {
+  position: relative;
+  z-index: 35;
+}
+.lq-fbtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 36px;
+  padding: 0 12px;
+  border-radius: 4px;
+  border: 1px solid var(--line-3);
+  background: transparent;
+  color: var(--text-2);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.lq-fbtn:hover {
+  background: var(--hover);
+  color: var(--text);
+}
+.lq-fbtn.is-on {
+  border-style: dashed;
+  border-color: var(--text-3);
+  background: var(--accent-soft);
+  color: var(--text);
+}
+.lq-fbtn em {
+  display: inline-grid;
+  place-items: center;
+  min-width: 18px;
+  height: 18px;
+  border-radius: 2px;
+  background: var(--accent);
+  color: var(--on-accent);
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 700;
+}
+.lq-menu {
+  position: absolute;
+  z-index: 40;
+  top: calc(100% + 6px);
+  left: 0;
+  width: 300px;
+  max-height: 360px;
+  overflow-y: auto;
+  padding: 6px;
+  border-radius: 4px;
+  border: 1px solid var(--line-3);
+  background: var(--surface);
+  box-shadow: 0 16px 40px #00000073;
+}
+.lq-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 40px;
+  padding: 0 8px;
+  margin-bottom: 4px;
+  border-bottom: 1px solid var(--line-2);
+  color: var(--text-3);
+}
+.lq-search input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-size: 13px;
+  outline: none;
+}
+.lq-clear,
+.lq-reset {
+  border: 0;
+  background: transparent;
+  color: var(--text-3);
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.lq-clear:hover,
+.lq-reset:hover {
+  color: var(--text);
+}
+.lq-reset {
+  height: 36px;
+  padding: 0 10px;
+  text-decoration: underline;
+}
+.lq-opt {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  height: 40px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-size: 13.5px;
+  text-align: left;
+  cursor: pointer;
+}
+.lq-opt:hover {
+  background: var(--hover);
+}
+.lq-check {
+  position: relative;
+  flex: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 2px;
+  border: 1.5px solid var(--line-4);
+  background: var(--sunken);
+}
+.lq-opt.is-on .lq-check {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+.lq-opt.is-on .lq-check::after {
+  content: "";
+  position: absolute;
+  left: 5px;
+  top: 1px;
+  width: 5px;
+  height: 10px;
+  border: solid var(--on-accent);
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+.lq-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  border: 0;
+  background: transparent;
+  cursor: default;
+}
+
+/* Vault table. Columns: vault, asset, term, deposits, liquidity, utilization, APR today,
+   APR 30d range, unlock date, early exit, action. Narrower screens drop the least useful
+   columns first; anything still too wide scrolls under a sticky vault column. */
+.lq-scroll {
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+.lq-table {
+  min-width: 100%;
+  font-size: 13.5px;
+}
+.lq-tr,
+.lq-row {
+  display: grid;
+  grid-template-columns:
+    minmax(244px, 1.5fr) 96px 96px repeat(4, minmax(112px, 1fr)) minmax(132px, 1.1fr)
+    minmax(120px, 1fr) 112px 104px;
+  align-items: center;
+  column-gap: 16px;
+  padding-right: 24px;
+}
+.lq-th {
+  min-height: 48px;
+  background: var(--sunken);
+  border-bottom: 1px solid var(--line-2);
+  color: var(--text-3);
+  font-size: 12.5px;
+  font-weight: 600;
+  line-height: 1.3;
+  white-space: nowrap;
+}
+.lq-row {
+  min-height: 72px;
+  border-bottom: 1px solid var(--line-1);
+}
+.lq-row:hover {
+  background: var(--hover);
+}
+.lq-th > span:first-child,
+.lq-row > .lq-name {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+  padding-left: 24px;
+  padding-right: 12px;
+  background: var(--sunken);
+}
+.lq-row > .lq-name {
+  gap: 12px;
+  min-width: 0;
+  background: var(--raised);
+}
+.lq-row:hover > .lq-name {
+  background: color-mix(in srgb, var(--raised) 94%, var(--text) 6%);
+}
+.lq-row .rk {
+  min-width: 18px;
+}
+.lq-av,
+.lq-av .logo {
+  flex: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+}
+.lq-nm {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+.lq-nm b {
+  font-size: 15px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.lq-h {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text-3);
+  font: inherit;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+}
+.lq-h:hover,
+.lq-h.is-on {
+  color: var(--text);
+}
+.lq-h i {
+  font-style: normal;
+}
+.lq-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+.lq-cell b {
+  font-size: 14.5px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.lq-apr b {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--up);
+}
+.lq-asset b {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.lq-asset .logo {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+}
+.lq-ub {
+  display: block;
+  width: min(96px, 100%);
+  height: 5px;
+  border-radius: 2px;
+  background: var(--active);
+  overflow: hidden;
+}
+.lq-ub i {
+  display: block;
+  height: 100%;
+  background: var(--c-up);
+}
+.lq-act {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+.lq-btn {
+  height: 36px;
+  padding: 0 16px;
+  border-radius: 4px;
+  border: 0;
+  background: var(--accent);
+  color: var(--on-accent);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.lq-btn.ghost {
+  background: transparent;
+  border: 1px solid var(--line-3);
+  color: var(--text);
+}
+.lq-btn:hover {
+  filter: brightness(1.08);
+}
+.lq-empty {
+  margin: 0;
+  padding: 28px 24px;
+  text-align: center;
+  color: var(--text-3);
+  font-size: 13.5px;
+}
+.lq-card .pgx,
+.lq-dock .pgx {
+  padding: 14px 24px;
+}
+/* Info tips in the last header columns open leftwards so the card edge does not clip them. */
+.lq-th > :nth-last-child(-n + 3) .ib::after {
+  left: auto;
+  right: 0;
+  transform: none;
+}
+
+@media (max-width: 1599px) {
+  .lq-c-asset {
+    display: none !important;
+  }
+  .lq-tr,
+  .lq-row {
+    grid-template-columns:
+      minmax(236px, 1.5fr) 92px repeat(4, minmax(100px, 1fr)) minmax(128px, 1.1fr)
+      minmax(116px, 1fr) 108px 104px;
+  }
+}
+@media (max-width: 1439px) {
+  .lq-c-range {
+    display: none !important;
+  }
+  .lq-tr,
+  .lq-row {
+    grid-template-columns:
+      minmax(220px, 1.5fr) 84px repeat(4, minmax(96px, 1fr)) minmax(112px, 1fr) 100px
+      100px;
+    column-gap: 14px;
+  }
+}
+@media (max-width: 1199px) {
+  .lq-c-0 {
+    display: none !important;
+  }
+  .lq-tr,
+  .lq-row {
+    grid-template-columns:
+      minmax(232px, 1.5fr) repeat(4, minmax(84px, 1fr)) minmax(100px, 1fr) 88px
+      100px;
+    column-gap: 12px;
+  }
+  /* Headers may wrap to two lines rather than run into the next column. */
+  .lq-th {
+    white-space: normal;
+  }
+}
+@media (max-width: 1023px) {
+  .lq-c-2,
+  .lq-c-exit {
+    display: none !important;
+  }
+  .lq-tr,
+  .lq-row {
+    grid-template-columns:
+      minmax(216px, 1.5fr) repeat(3, minmax(76px, 1fr)) minmax(96px, 1fr)
+      88px;
+    padding-right: 16px;
+  }
+  .lq-th > span:first-child,
+  .lq-row > .lq-name {
+    padding-left: 16px;
+  }
+}
+
+/* ---- Depositor dock ---------------------------------------------------------------------- */
+
+.lq-dock {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+  border: 1px solid var(--line-2);
+  border-radius: 4px;
+  background: var(--surface);
+}
+.lq-dock .dock-head {
+  height: 56px;
+  padding: 0 16px 0 24px;
+}
+.lq-dock .tabs {
+  gap: 24px;
+}
+.lq-dock .tab {
+  font-size: 14px;
+}
+.lq-dock-tools {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.lq-dock .wfilter {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 24px;
+  border-bottom: 1px solid var(--line-2);
+}
+.lq-status > button {
+  height: 30px;
+}
+.lq-total {
+  margin-left: auto;
+  font-size: 13.5px;
+  color: var(--text-3);
+  white-space: nowrap;
+}
+.lq-total b {
+  color: var(--text);
+}
+.lq-ltable {
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+/* Deposits: vault, deposited on, entry APR, unlock, days left, deposited, value, earned,
+   status, actions. */
+.lq-lr {
+  display: grid;
+  grid-template-columns:
+    minmax(150px, 1.2fr) repeat(2, minmax(96px, 1fr)) minmax(104px, 1fr) 72px
+    repeat(3, minmax(96px, 1fr)) 92px 116px;
+  align-items: center;
+  column-gap: 20px;
+  min-width: 1180px;
+  min-height: 56px;
+  padding: 0 24px 0 0;
+  border-bottom: 1px solid var(--line-1);
+  font-size: 13.5px;
+}
+.lq-lr.lq-th {
+  min-height: 46px;
+  font-size: 12.5px;
+}
+/* Activity: vault, date, action, amount, entry APR, penalty. */
+.lq-lr.lq-ar {
+  grid-template-columns: minmax(170px, 1.2fr) 130px 130px repeat(3, minmax(120px, 1fr));
+  min-width: 900px;
+}
+.lq-lr > span {
+  white-space: nowrap;
+}
+.lq-lr > .lq-lname,
+.lq-lr.lq-th > span:first-child {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+  padding-left: 24px;
+  background: var(--surface);
+}
+.lq-lr.lq-th > span:first-child {
+  background: var(--sunken);
+}
+.lq-lr .up,
+.lq-eapr {
+  color: var(--up);
+}
+.lq-eapr {
+  font-weight: 600;
+}
+.lq-st,
+.lq-act-chip {
+  display: inline-flex;
+  align-items: center;
+  height: 22px;
+  padding: 0 8px;
+  border-radius: 2px;
+  font-size: 11.5px;
+  font-weight: 700;
+  white-space: nowrap;
+  background: var(--active);
+  color: var(--text-2);
+}
+.lq-st.free,
+.lq-act-chip.deposit {
+  background: #2d63f52e;
+  color: var(--up);
+}
+.lq-st.done {
+  background: transparent;
+  color: var(--text-4);
+}
+.lq-act-chip.early-exit {
+  background: #ef444429;
+  color: var(--down);
+}
+.lq-act-chip.unlock {
+  background: var(--accent-soft);
+  color: var(--text);
+}
+
+/* ---- Deposit and early exit sheets ------------------------------------------------------- */
+
+.lq-sheet-rows {
+  margin: 4px 0 12px;
+}
+.lq-sheet .obs-row {
+  gap: 12px;
+}
+.lq-sheet .obs-row > b {
+  text-align: right;
+}
+.lq-est {
+  margin: 8px 0 0;
+  font-size: 12.5px;
+  color: var(--text-3);
+}
+.lq-exit-cta {
+  background: var(--short);
+  color: #fff;
+}
+
+/* ---- Analytics --------------------------------------------------------------------------- */
+
+.lq-kpis {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  margin: 0 0 16px;
+  border-radius: 4px;
+  border: 1px solid var(--line-2);
+  background: var(--raised);
+}
+.lq-kpi {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  padding: 16px 18px;
+  border-right: 1px solid var(--line-2);
+}
+.lq-kpi:last-child {
+  border-right: 0;
+}
+.lq-kpi > b {
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+}
+.lq-kpi small {
+  font-size: 12px;
+  color: var(--text-3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.lq-kpi small.up {
+  color: var(--up);
+}
+.lq-kpi small.down {
+  color: var(--down);
+}
+.lq-charts {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 16px;
+  margin-bottom: 16px;
+}
+.lq-charts > .mw-card {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+}
+.lq-charts .lq-full {
+  grid-column: 1 / -1;
+}
+.lq-plot {
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1fr);
+  grid-template-rows: 220px 26px;
+  padding: 12px 18px 0 0;
+}
+.lq-plot.nolabels {
+  grid-template-columns: 0 minmax(0, 1fr);
+  padding-left: 18px;
+}
+.lq-full .lq-plot {
+  grid-template-rows: 280px 26px;
+}
+/* Fills the card when its neighbour in the row is taller (it carries a stats strip). */
+.lq-plot-tall {
+  flex: 1;
+  grid-template-rows: minmax(220px, 1fr) 26px;
+}
+.lq-y {
+  position: relative;
+}
+.lq-y span {
+  position: absolute;
+  right: 8px;
+  transform: translateY(-50%);
+  font-size: 11px;
+  color: var(--text-3);
+  white-space: nowrap;
+}
+.lq-area {
+  position: relative;
+  grid-column: 2;
+  border-bottom: 1px solid var(--line-2);
+}
+.lq-area .mwc-hit {
+  z-index: 3;
+}
+.lq-x {
+  grid-column: 2;
+  position: relative;
+}
+.lq-x span {
+  position: absolute;
+  top: 6px;
+  transform: translateX(-50%);
+  font-size: 11px;
+  color: var(--text-3);
+  white-space: nowrap;
+}
+.lq-x span.first {
+  transform: none;
+}
+.lq-x span.last {
+  transform: translateX(-100%);
+}
+.lq-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  padding: 8px 18px 16px 74px;
+  font-size: 12px;
+  color: var(--text-2);
+}
+.lq-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.lq-legend i {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+}
+.lq-chart .mwc-tip {
+  z-index: 6;
+  min-width: 230px;
+  max-width: 260px;
+}
+.lq-chart .mwc-tip.side-r {
+  transform: translateX(14px);
+}
+.lq-chart .mwc-tip.side-l {
+  transform: translateX(calc(-100% - 14px));
+}
+.lq-chart .tip-h b,
+.lq-chart .tip-r span {
+  white-space: nowrap;
+}
+.lq-stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  border-bottom: 1px solid var(--line-2);
+}
+.lq-stats > div {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  padding: 14px 20px;
+  border-right: 1px solid var(--line-2);
+}
+.lq-stats > div:last-child {
+  border-right: 0;
+}
+.lq-stats span {
+  font-size: 12px;
+  color: var(--text-3);
+  white-space: nowrap;
+}
+.lq-stats b {
+  font-size: 20px;
+  font-weight: 700;
+}
+.lq-stats b.up {
+  color: var(--up);
+}
+.lq-stats b.down {
+  color: var(--down);
+}
+.lq-traders .wfilter {
+  display: flex;
+  align-items: center;
+  padding: 14px 24px;
+  border-bottom: 1px solid var(--line-2);
+}
+.lq-traders .pv-table {
+  min-width: 720px;
+}
+.lq-traders .pv-tr {
+  padding: 0 24px;
+}
+.lq-traders .pv-th .th-i {
+  justify-content: flex-end;
+}
+.lq-traders .pgx {
+  padding: 14px 24px;
+}
+
+@media (max-width: 1279px) {
+  .lq-kpis {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .lq-kpi:nth-child(3) {
+    border-right: 0;
+  }
+  .lq-kpi:nth-child(n + 4) {
+    border-top: 1px solid var(--line-2);
+  }
+  .lq-charts {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .lq-plot-tall {
+    grid-template-rows: 220px 26px;
+  }
+}
+
+/* ---- Phones ------------------------------------------------------------------------------ */
+
+@media (max-width: 767px) {
+  .page-liq .wh-r {
+    display: none;
+  }
+  .page-liq .page-head {
+    margin-bottom: 12px;
+  }
+  /* This page keeps a 16px gutter on phones; full-bleed strips cancel exactly that. */
+  .page-liq .ttg.mw-sticky {
+    margin: 0 -16px 14px;
+  }
+  .lq-vaults {
+    gap: 14px;
+  }
+  .lq-head,
+  .lq-bar {
+    padding: 14px 16px;
+  }
+  .lq-head h2 {
+    font-size: 17px;
+  }
+  .lq-fbtn,
+  .lq-reset {
+    height: 40px;
+  }
+  .lq-opt {
+    height: 44px;
+  }
+  .lq-menu {
+    position: fixed;
+    left: 12px;
+    right: 12px;
+    top: auto;
+    bottom: calc(76px + env(safe-area-inset-bottom, 0px));
+    width: auto;
+    max-height: 60vh;
+  }
+
+  /* Vault rows become cards: name across the top, labelled values in two columns, and a
+     full-width Deposit button. */
+  .lq-th {
+    display: none !important;
+  }
+  .lq-tr,
+  .lq-row {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 14px 12px;
+    padding: 18px 16px;
+    min-height: 0;
+  }
+  .lq-row > .lq-name {
+    position: static;
+    grid-column: 1 / -1;
+    padding-left: 0;
+    background: transparent !important;
+  }
+  .lq-c-0,
+  .lq-c-2,
+  .lq-c-range,
+  .lq-c-exit {
+    display: flex !important;
+  }
+  .lq-row > .lq-cell::before {
+    content: attr(data-k);
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-3);
+    white-space: nowrap;
+  }
+  .lq-cell b {
+    font-size: 14px;
+    white-space: normal;
+  }
+  .lq-ub {
+    width: 100%;
+  }
+  .lq-row .lq-act {
+    grid-column: 1 / -1;
+  }
+  .lq-row .lq-act .lq-btn {
+    width: 100%;
+    height: 44px;
+  }
+
+  /* The trade screen hides its dock on phones; this one holds the user's deposits. */
+  .page-liq .lq-dock {
+    display: flex !important;
+  }
+  .lq-dock .dock-head {
+    padding: 0 8px 0 16px;
+  }
+  .lq-dock .tabs {
+    gap: 16px;
+  }
+  .lq-dock .wfilter {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 12px 16px;
+  }
+  .lq-status {
+    display: flex;
+  }
+  .lq-status > button {
+    flex: 1;
+  }
+  .lq-total {
+    margin-left: 0;
+  }
+  .lq-lr,
+  .lq-lr.lq-ar {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 10px 12px;
+    min-width: 0;
+    padding: 14px 16px;
+  }
+  .lq-lr > span {
+    white-space: normal;
+  }
+  .lq-lr > .lq-lname {
+    position: static;
+    grid-column: 1 / -1;
+    padding-left: 0;
+    background: transparent;
+  }
+  .lq-lr > [data-k]::before {
+    content: attr(data-k);
+    display: block;
+    margin-bottom: 2px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-3);
+  }
+  .lq-lr .lq-act {
+    grid-column: 1 / -1;
+    justify-content: stretch;
+  }
+  .lq-lr .lq-act .lq-btn {
+    flex: 1;
+    height: 40px;
+  }
+  .lq-card .pgx,
+  .lq-dock .pgx {
+    padding: 12px 16px;
+  }
+
+  .lq-kpis {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    margin: 0 -16px 14px;
+    padding: 0 16px;
+    scroll-padding: 0 16px;
+    border: 0;
+    background: transparent;
+  }
+  .lq-kpis::-webkit-scrollbar {
+    display: none;
+  }
+  .lq-kpi {
+    flex: 0 0 70%;
+    scroll-snap-align: start;
+    padding: 14px;
+    border: 1px solid var(--line-2) !important;
+    border-radius: 4px;
+    background: var(--raised);
+  }
+  .lq-plot,
+  .lq-plot.nolabels {
+    grid-template-columns: 0 minmax(0, 1fr);
+    grid-template-rows: 180px 26px;
+    padding: 10px 12px 0;
+  }
+  .lq-full .lq-plot {
+    grid-template-rows: 200px 26px;
+  }
+  .lq-y span {
+    right: auto;
+    left: 4px;
+    z-index: 2;
+    transform: translateY(-120%);
+    color: var(--text-4);
+  }
+  .lq-legend {
+    padding: 8px 12px 12px;
+  }
+  .lq-chart .mwc-tip,
+  .lq-chart .mwc-tip.side-l,
+  .lq-chart .mwc-tip.side-r {
+    left: 6px !important;
+    right: 6px;
+    top: 6px;
+    min-width: 0;
+    max-width: none;
+    transform: none;
+  }
+  .lq-stats {
+    grid-template-columns: 1fr 1fr;
+  }
+  .lq-stats > div:nth-child(2) {
+    border-right: 0;
+  }
+  .lq-stats > div:nth-child(-n + 2) {
+    border-bottom: 1px solid var(--line-2);
+  }
+}

@@ -1,9 +1,11 @@
 # OpenFutures trading app
 
-Perpetual-futures trading terminal: trade, Market Watch and prop/LP vault screens, across
+Perpetual-futures trading terminal: trade, Market Watch, Prop and Liquidity screens, across
 several venues. Built with Vite, React 19, TypeScript and Tailwind CSS v4.
 
-This codebase is a 1:1 source rebuild of the v90 design prototype. The prototype is not in the
+This codebase started as a 1:1 source rebuild of the v90 design prototype. The Liquidity screen
+and the info tips, icon toggles and icon-only snapshot buttons come from v104, rebuilt with
+their own modules rather than copied as one block, and with layout fixes over the prototype. The prototype is not in the
 repository; the parity checks expect a local copy at `reference/openfutures-v90.html`. Markup, styles and behaviour match the prototype; everything
 that looks like live data is still simulated and is meant to be replaced (see
 [Integration points](#integration-points)).
@@ -32,9 +34,13 @@ src/
   terminal/
     Terminal.ts          controller: state, lifecycle, price tick, chart sync
     viewModel.ts         derives the view model (values and handlers) from state
+    liquidity/           the Liquidity screen's view model, split by concern: vault
+                         snapshots, the depositor's book, chart geometry, analytics,
+                         funded traders; `buildLiquidityViewModel` becomes `vm.liq`
     useTerminal.ts       React hook that owns a Terminal and re-renders on change
     types.ts             AppProps, TerminalViewModel
-  components/            presentational components, grouped by screen
+  components/            presentational components, grouped by screen; `common/` holds
+                         shared pieces (info tip, icon toggle, snapshot button, pager)
   styles/
     index.css            Tailwind entry and import order
     theme.css            Tailwind theme: colours, fonts, breakpoints, variants
@@ -90,11 +96,12 @@ time, using the parity checks below to confirm nothing moved.
 | Prices | `src/lib/prices.ts`, ticked once a second from `Terminal.componentDidMount` | deterministic simulation that mutates `MARKETS` in place |
 | Order book and fills | `packages/core/src/orderBook.ts` | simulated per market and venue |
 | Positions, orders, history | `src/data/account.ts`, `src/data/prop.ts`; copied into `Terminal` state | seed data, changed only by local handlers |
+| Liquidity vaults, deposits, funded traders | `src/data/liquidity.ts`, `src/terminal/liquidity/` | seeded and deterministic per day; deposits, withdrawals and early exits update `lqBook` in state. Penalty and earnings maths is in `packages/core/src/liquidity.ts` |
 | Order placement, TP/SL, deposits, prop and vault actions | handlers in `src/terminal/viewModel.ts` | update local state and show a toast |
 | Assistant | `aiEndpoint` prop | `POST { system, messages }`, expects `{ text }`; canned local answers when unset |
 | In-app browser | `browseProxy` prop | loads `<proxy>?url=...`; disabled when unset |
 | Chart | `Terminal.syncTv`, candles built in `viewModel.ts` and `packages/core/src/candles.ts` | TradingView Lightweight Charts (npm, v4.2.3) fed simulated candles; `Timeframe.history` sets how many are loaded. `tvWidget` swaps in the hosted TradingView widget |
-| Routing | `syncUrl` prop | mirrors the screen to `/`, `/watch`, `/prop`, `/profile` |
+| Routing | `syncUrl` prop | mirrors the screen to `/`, `/watch`, `/prop`, `/liquidity`, `/profile` |
 
 Props are declared in `src/terminal/types.ts`. Preferences (theme, accent, routing, onboarding)
 persist in `localStorage` under `openfutures-*` keys.

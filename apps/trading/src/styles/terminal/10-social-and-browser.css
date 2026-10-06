@@ -1455,9 +1455,6 @@ img.logo[data-asset]:hover {
   width: 16px;
   height: 16px;
 }
-.tabbar.tb-3 {
-  grid-template-columns: repeat(3, 1fr);
-}
 .m-list-plain {
   padding: 0 2px;
 }

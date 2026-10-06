@@ -24,6 +24,7 @@ import { hashString, seededRandom } from "@openfutures/core";
 import { niceStep, seededPriceSeries, sparklinePath } from "@openfutures/core";
 import { renderShareCard, saveNodeSnapshot } from "@/lib/snapshot";
 import { DEFAULT_PANE_SIZES } from "@/terminal/layout";
+import { buildLiquidityViewModel } from "@/terminal/liquidity/viewModel";
 
 /**
  * Derives everything the components render, and the handlers they call, from the terminal's state.
@@ -8827,7 +8828,6 @@ user: `
     ":" +
     pad2(nowDate2.getUTCMinutes());
   const selectedPlanSize = state.ppPlan || 25000;
-  const propTab = state.ppTab || "trade";
   const propProfit = propEquity - propAccount.size;
   const profitTargetAmount = propAccount.size * propRules.target;
   const hasReachedTarget = propProfit >= profitTargetAmount;
@@ -8835,115 +8835,31 @@ user: `
   const isRuleBroken =
     (propAccount.status === "eval" || propAccount.status === "funded") &&
     (dailyLossLeft <= 0 || maxLossLeft <= 0);
-  var lpState = { deposit: 0, shares: 0, pending: 0, log: [], ...(state.lp || {}) };
-  const vaultSharePrice = 1.0874 + (Math.floor(state.now / 86400000) % 30) * 0.0004;
-  const vaultBaseTvl = 4820000;
-  function appendLpLog(text: any, amount: any, kind: any) {
-    return [{ t: nowLabel, text: text, amt: amount, kind: kind }]
-      .concat(lpState.log || [])
-      .slice(0, 20);
-  }
-  const vaultTvl = vaultBaseTvl + lpState.shares * vaultSharePrice;
-  const fundedTraderCount = 31 + (propAccount.status === "funded" ? 1 : 0);
-  const vaultAllocated = 2985000 + (propAccount.status === "funded" ? propAccount.size : 0);
-  const vaultUtilization = (vaultAllocated / vaultTvl) * 100;
-  const sharePriceSeries = generateSeries("vault-share", vaultSharePrice, 0.00042, 0.002).slice(
-    -90,
-  );
-  const sharePriceMin = Math.min.apply(null, sharePriceSeries);
-  const sharePriceMax = Math.max.apply(null, sharePriceSeries);
-  let sharePricePath = "";
-  sharePriceSeries.forEach((price, index) => {
-    sharePricePath +=
-      (index ? "L" : "M") +
-      ((index / (sharePriceSeries.length - 1)) * 1000).toFixed(1) +
-      " " +
-      (262 - ((price - sharePriceMin) / (sharePriceMax - sharePriceMin || 1)) * 240).toFixed(1);
+  // The signed-in trader appears among the vault's funded traders once their account is funded.
+  const fundedYou =
+    propAccount.status === "funded"
+      ? {
+          name: "You",
+          size: propAccount.size,
+          pnl: propProfit / propAccount.size,
+          drawdown: Math.max(
+            0,
+            (propAccount.size - propEquity) / (propAccount.size * propRules.max),
+          ),
+          status: "Funded" as const,
+          days: propAccount.days || 1,
+          you: true,
+        }
+      : null;
+  const liquidityViewModel = buildLiquidityViewModel({
+    terminal: self,
+    state,
+    availableBalance: liveFreeBalance,
+    paginate,
+    showToast,
+    you: fundedYou,
   });
-  const vaultTraders = [];
-  (() => {
-    const rng = seededRandom(hashString("vault-traders"));
-    const hexChars = "0123456789abcdef";
-    for (let traderIndex = 0; traderIndex < 31; traderIndex++) {
-      let address = "0x";
-      for (let prefixIndex = 0; prefixIndex < 4; prefixIndex++) {
-        address += hexChars[Math.floor(rng() * 16)];
-      }
-      address += "…";
-      for (let suffixIndex = 0; suffixIndex < 2; suffixIndex++) {
-        address += hexChars[Math.floor(rng() * 16)];
-      }
-      const accountSize2 = propPlans[Math.floor(rng() * 4)][0];
-      const pnlFraction = (rng() - 0.35) * 0.14;
-      const drawdown = Math.max(0, Math.min(1, rng() * 0.9));
-      const traderStatus = pnlFraction > 0.06 && rng() > 0.5 ? "Payout due" : "Funded";
-      vaultTraders.push({
-        name: address,
-        size: accountSize2,
-        pnl: pnlFraction,
-        dd: drawdown,
-        st: traderStatus,
-        days: 6 + Math.floor(rng() * 80),
-      });
-    }
-  })();
-  if (propAccount.status === "funded") {
-    vaultTraders.unshift({
-      name: "You",
-      size: propAccount.size,
-      pnl: propProfit / propAccount.size,
-      dd: Math.max(0, (propAccount.size - propEquity) / (propAccount.size * propRules.max)),
-      st: "Funded",
-      days: propAccount.days || 1,
-      you: true,
-    });
-  }
-  const traderSort = state.ppSort || "size";
-  vaultTraders.sort((a, b) => {
-    if (traderSort === "pnl") {
-      return b.pnl - a.pnl;
-    } else if (traderSort === "days") {
-      return b.days - a.days;
-    } else {
-      return b.size - a.size;
-    }
-  });
-  const vaultTradersPaged = paginate(
-    "vault-traders",
-    vaultTraders.map((trader) => ({
-      name: trader.name,
-      you: !!trader.you,
-      rowCls: "pv-tr" + (trader.you ? " is-you" : ""),
-      size: "$" + trader.size.toLocaleString("en-US"),
-      pnl: (trader.pnl >= 0 ? "▲ " : "▼ ") + Math.abs(trader.pnl * 100).toFixed(2) + "%",
-      pnlCls: trader.pnl >= 0 ? "up" : "down",
-      dd: (trader.dd * 100).toFixed(0) + "%",
-      ddW: Math.max(2, trader.dd * 100).toFixed(0),
-      ddCls: trader.dd > 0.75 ? "down" : trader.dd > 0.5 ? "warn" : "ok",
-      st: trader.st,
-      stCls: "pv-st" + (trader.st === "Payout due" ? " due" : ""),
-      days: String(trader.days),
-    })),
-  );
-  const lpAmount = parseFloat(state.lpAmt) || 0;
-  const availableBalance2 = Math.max(0, liveFreeBalance);
   const propViewModel = {
-    tabs: [
-      ["trade", "Trade"],
-      ["lp", "Provide Liquidity"],
-    ].map((tab) => {
-      const isActive = propTab === tab[0];
-      return {
-        label: tab[1],
-        cls: "lg-tab" + (isActive ? " is-on" : ""),
-        pressed: isActive ? "true" : "false",
-        pick: () => {
-          self.setState({ ppTab: tab[0] });
-        },
-      };
-    }),
-    isTrade: propTab === "trade",
-    isLp: propTab === "lp",
     none: propAccount.status === "none",
     hasAcct: propAccount.status === "eval" || propAccount.status === "funded",
     isEval: propAccount.status === "eval",
@@ -8985,10 +8901,6 @@ user: `
         },
         propPositions: [],
         account: "prop",
-        lp: {
-          ...lpState,
-          log: appendLpLog("Evaluation fee to the vault", selectedPlan2[1], "fee"),
-        },
       });
       showToast(
         "Evaluation started on a $" +
@@ -9092,14 +9004,6 @@ user: `
             realized: (propAccount.realized || 0) - propProfit,
             dayStart: propAccount.size,
           },
-          lp: {
-            ...lpState,
-            log: appendLpLog(
-              "Profit share from a funded trader",
-              propProfit - traderShare,
-              "profit",
-            ),
-          },
         });
         showToast(
           "Payout of " +
@@ -9114,152 +9018,6 @@ user: `
       self.setState({ screen: "detail", account: "prop" });
     },
     positionsN: String((state.propPositions || []).length),
-    kpis: [
-      {
-        label: "Total Value Locked",
-        value: "$" + formatCompact(vaultTvl),
-        sub: "USDC in the vault",
-      },
-      { label: "APY, 30d", value: "18.4%", sub: "Fees plus profit share" },
-      { label: "Share Price", value: "$" + vaultSharePrice.toFixed(4), sub: "Per vault share" },
-      {
-        label: "Utilization",
-        value: vaultUtilization.toFixed(1) + "%",
-        sub: "$" + formatCompact(vaultAllocated) + " allocated",
-      },
-      { label: "Funded Traders", value: String(fundedTraderCount), sub: "Live accounts" },
-    ],
-    line: sharePricePath,
-    lineArea: sharePricePath + "L1000 280L0 280Z",
-    hi: "$" + sharePriceMax.toFixed(4),
-    lo: "$" + sharePriceMin.toFixed(4),
-    sources: [
-      { k: "Evaluation fees", v: "+$48.2K", cls: "up" },
-      { k: "Profit share from funded traders", v: "+$31.9K", cls: "up" },
-      { k: "Funded losses", v: "-$14.6K", cls: "down" },
-      { k: "Net to LPs, 30 days", v: "+$65.5K", cls: "up strong" },
-    ],
-    risk: [
-      { k: "Loss cap per account", v: propRules.max * 100 + "% of account size" },
-      { k: "Reserve buffer", v: "15% kept unallocated" },
-      { k: "Withdrawals", v: "Settle at the daily epoch" },
-      { k: "Access", v: "Permissionless, no minimum" },
-    ],
-    myValue: formatUsd(lpState.shares * vaultSharePrice),
-    myShares: lpState.shares.toFixed(2) + " shares",
-    myEarned: formatSignedUsd(lpState.shares * vaultSharePrice - lpState.deposit),
-    myEarnCls: lpState.shares * vaultSharePrice - lpState.deposit >= 0 ? "up" : "down",
-    hasPending: lpState.pending > 0,
-    pending: formatUsd(lpState.pending) + " withdrawal settles at the next epoch",
-    noShares: lpState.shares <= 0,
-    sheet: state.lpSheet || null,
-    sheetOpen: !!state.lpSheet,
-    isDep: state.lpSheet === "deposit",
-    sheetTitle: state.lpSheet === "deposit" ? "Deposit to the Vault" : "Withdraw from the Vault",
-    openDep: () => {
-      self.setState({ lpSheet: "deposit", lpAmt: "" });
-    },
-    openWd: () => {
-      self.setState({ lpSheet: "withdraw", lpAmt: "" });
-    },
-    closeSheet: () => {
-      self.setState({ lpSheet: null });
-    },
-    amt: state.lpAmt || "",
-    onAmt: (e: any) => {
-      self.setState({ lpAmt: e.target.value.replace(/[^0-9.]/g, "") });
-    },
-    sheetMax:
-      state.lpSheet === "deposit"
-        ? "Available " + formatUsd(availableBalance2)
-        : "In the vault " + formatUsd(lpState.shares * vaultSharePrice),
-    quick: [25, 50, 100].map((pct) => ({
-      label: pct === 100 ? "Max" : pct + "%",
-      pick: () => {
-        const sourceAmount =
-          state.lpSheet === "deposit" ? availableBalance2 : lpState.shares * vaultSharePrice;
-        self.setState({ lpAmt: ((sourceAmount * pct) / 100).toFixed(2) });
-      },
-    })),
-    sheetCta: lpAmount
-      ? state.lpSheet === "deposit"
-        ? lpAmount > availableBalance2
-          ? "More than your balance"
-          : "Deposit " + formatUsd(lpAmount)
-        : lpAmount > lpState.shares * vaultSharePrice
-          ? "More than you hold"
-          : "Withdraw " + formatUsd(lpAmount)
-      : "Enter an amount",
-    sheetDis:
-      !lpAmount ||
-      (state.lpSheet === "deposit"
-        ? lpAmount > availableBalance2
-        : lpAmount > lpState.shares * vaultSharePrice),
-    submit: () => {
-      if (lpAmount) {
-        if (state.lpSheet === "deposit") {
-          if (lpAmount > availableBalance2) {
-            return;
-          }
-          self.setState({
-            lpSheet: null,
-            lp: {
-              ...lpState,
-              deposit: lpState.deposit + lpAmount,
-              shares: lpState.shares + lpAmount / vaultSharePrice,
-              log: appendLpLog("Deposited", lpAmount, "dep"),
-            },
-          });
-          showToast(
-            "Deposited " +
-              formatUsd(lpAmount) +
-              " for " +
-              (lpAmount / vaultSharePrice).toFixed(2) +
-              " vault shares.",
-          );
-        } else {
-          const heldValue = lpState.shares * vaultSharePrice;
-          if (lpAmount > heldValue) {
-            return;
-          }
-          const withdrawFraction = lpAmount / heldValue;
-          self.setState({
-            lpSheet: null,
-            lp: {
-              ...lpState,
-              shares: lpState.shares * (1 - withdrawFraction),
-              deposit: lpState.deposit * (1 - withdrawFraction),
-              pending: lpState.pending + lpAmount,
-              log: appendLpLog("Withdrawal requested", lpAmount, "wd"),
-            },
-          });
-          showToast("Withdrawal of " + formatUsd(lpAmount) + " queued for the next epoch.");
-        }
-      }
-    },
-    log: (lpState.log || []).map((entry: any) => ({
-      t: entry.t,
-      text: entry.text,
-      amt: (entry.kind === "wd" ? "-" : "+") + formatUsd(Number(entry.amt)),
-      cls: "cl-l " + entry.kind,
-    })),
-    hasLog: (lpState.log || []).length > 0,
-    traders: vaultTradersPaged.rows,
-    tradersPager: vaultTradersPaged.pager,
-    sorts: [
-      ["size", "Account"],
-      ["pnl", "PnL"],
-      ["days", "Days"],
-    ].map((sortOption) => {
-      const isActive = traderSort === sortOption[0];
-      return {
-        label: sortOption[1],
-        cls: "mwc-opt" + (isActive ? " is-on" : ""),
-        pick: () => {
-          self.setState({ ppSort: sortOption[0] });
-        },
-      };
-    }),
     goProp: () => {
       self.setState({ screen: "prop" });
     },
@@ -9803,6 +9561,7 @@ user: `
     dockToggleLabel: state.dockOpen ? "Collapse activity" : "Expand activity",
     dockChevron: state.dockOpen ? "m6 9 6 6 6-6" : "m6 15 6-6 6 6",
     tb: {
+      liquidity: state.screen === "liquidity" ? "is-active" : "",
       watch: state.screen === "watch" ? "is-active" : "",
       trade: state.screen === "detail" || state.screen === "home" ? "is-active" : "",
       prop: state.screen === "prop" ? "is-active" : "",
@@ -9812,6 +9571,7 @@ user: `
       ["detail", "Trade"],
       ["prop", "Prop"],
       ["watch", "Market Watch"],
+      ["liquidity", "Liquidity"],
     ]
       .filter((item) => item[0] !== "prop" || isPropAccount)
       .map((item) => {
@@ -9825,6 +9585,7 @@ user: `
         };
       }),
     goWatch: makeNavigate("watch"),
+    goLiquidity: makeNavigate("liquidity"),
     goTrade: makeNavigate(isMobile ? "home" : "detail"),
     goHome: makeNavigate("home"),
     goProp: makeNavigate("prop"),
@@ -9882,6 +9643,7 @@ user: `
     noEx: filteredExchanges.length === 0,
     xcats: exchangeCategoryTabs,
     prop2: propViewModel,
+    liq: liquidityViewModel,
     wrowsP: marketsPaged.rows,
     wrowsPager: marketsPaged.pager,
     exListP: venuesPaged.rows,
@@ -9930,7 +9692,7 @@ user: `
     mlist: holdings,
     mode: accountModeSwitch,
     isPropMode: isPropAccount,
-    tabbarCls: "tabbar" + (isPropAccount ? "" : " tb-3"),
+    tabbarCls: "tabbar",
     asd: assetSheetView,
     soc: socialPanel,
     socTab: socialsTab,
