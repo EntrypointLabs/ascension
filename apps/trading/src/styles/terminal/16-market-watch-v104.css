@@ -1,0 +1,268 @@
+/* Market Watch changes from prototype v104: venue insight cards, live-feed chips and the
+   placement of info tips on the watch page. Loaded last so it wins over 12/13 and 15. */
+
+/* Venue Insights: two roomy cards per row (one below 1100px) replacing the compact v90 cards. */
+.ex-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(480px, 1fr));
+  gap: 20px;
+}
+.exc2 {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 24px 26px;
+  /* Info tips in the stats grid must not be clipped by the card. */
+  overflow: visible;
+}
+.ex2-top {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.ex2-top > .logo {
+  width: 44px;
+  height: 44px;
+  border-radius: 6px;
+}
+.ex2-id {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.ex2-id b {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 18px;
+  font-weight: 700;
+}
+.ex2-id small {
+  font-size: 13px;
+  color: var(--text-3);
+}
+.ex2-type {
+  display: inline-flex;
+  align-items: center;
+  height: 20px;
+  padding: 0 7px;
+  border-radius: 2px;
+  background: var(--active);
+  color: var(--text-2);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+/* Feed status chip: "Live, 61 ms" or, amber, "Delayed, 420 ms". */
+.exc-live {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 28px;
+  padding: 0 10px;
+  border-radius: 4px;
+  background: var(--sunken);
+  border: 1px solid var(--line-2);
+  font-size: 12px;
+  color: var(--text-2);
+  white-space: nowrap;
+}
+.exc-live i {
+  width: 7px;
+  height: 7px;
+  border-radius: 2px;
+  background: var(--up);
+}
+.exc-live.slow {
+  color: #e5b75a;
+}
+.exc-live.slow i {
+  background: #e5b75a;
+}
+.ex2-lead {
+  margin: 0;
+  font-size: 14.5px;
+  line-height: 1.5;
+  color: var(--text-2);
+}
+.ex2-oi {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: end;
+  gap: 24px;
+}
+.ex2-oi > div {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.ex2-k {
+  font-size: 12.5px;
+  color: var(--text-3);
+}
+.ex2-oi b {
+  font-size: 34px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+}
+.ex2-chg {
+  font-size: 13px;
+  font-weight: 600;
+}
+.ex2-chg.up {
+  color: var(--up);
+}
+.ex2-chg.down {
+  color: var(--down);
+}
+.ex2-spark {
+  width: 100%;
+  height: 72px;
+}
+.ex2-share {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.ex2-share-t {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  font-size: 13.5px;
+  color: var(--text-2);
+}
+.ex2-share-t b {
+  color: var(--text);
+  font-size: 15px;
+}
+.ex2-rank {
+  font-size: 12.5px;
+  color: var(--text-3);
+}
+.ex2-share .exc-bar {
+  height: 8px;
+}
+.ex2-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 22px 20px;
+  margin: 0;
+  padding-top: 20px;
+  border-top: 1px solid var(--line-2);
+}
+.ex2-grid > div {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+}
+.ex2-grid dt {
+  font-size: 12.5px;
+  color: var(--text-3);
+}
+.ex2-grid dd {
+  margin: 0;
+  font-size: 19px;
+  font-weight: 700;
+}
+.ex2-grid dd.up {
+  color: var(--up);
+}
+.ex2-grid dd.down {
+  color: var(--down);
+}
+@media (max-width: 1100px) {
+  .ex-cards {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+@media (max-width: 767px) {
+  .ex-cards {
+    gap: 14px;
+  }
+  .exc2 {
+    padding: 18px;
+    gap: 16px;
+  }
+  .ex2-oi {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .ex2-oi b {
+    font-size: 30px;
+  }
+  .ex2-spark {
+    height: 56px;
+  }
+  .ex2-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .exc-live {
+    height: 24px;
+    padding: 0 8px;
+    font-size: 11px;
+  }
+}
+
+/* Info tips on the watch page open downwards: KPI tiles and card headers sit at the top of
+   their containers, where an upward tip would be clipped by the sticky top bar. */
+.mw-kpi .ib::after,
+.mw-card-h .ib::after,
+.mw-h3 .ib::after {
+  bottom: auto;
+  top: calc(100% + 8px);
+}
+/* Let KPI tips escape the tile row on tablet and desktop (phones scroll the row sideways). */
+@media (min-width: 768px) {
+  .mw-kpis,
+  .mw-kpi {
+    overflow: visible;
+  }
+}
+/* Hidden tips take no room, so they never widen a scroll container on the watch page. */
+.page-watch .ib::after {
+  display: none;
+}
+.page-watch .ib:hover::after,
+.page-watch .ib:focus-visible::after {
+  display: block;
+}
+
+/* Layout fixes over the v104 prototype, which on phones stacked the Venue Insights (i) under
+   its heading and let the DEX/CEX chip run under the live-feed chip. */
+.ex2-id b {
+  flex-wrap: wrap;
+  row-gap: 4px;
+}
+@media (max-width: 767px) {
+  .mw-h3.h-i {
+    flex-direction: row;
+    align-items: center;
+  }
+  .ex2-oi {
+    gap: 12px;
+  }
+}
+
+/* Tip placement fixes (v104 clipped these): the last KPI tile's tip opens leftwards so it stays
+   on screen, and on phones, where the KPI row scrolls sideways and cards clip their content,
+   the open tip is pinned across the screen width, above the tab bar and assistant button. */
+.mw-kpi:last-child .ib::after {
+  left: auto;
+  right: 0;
+}
+@media (max-width: 767px) {
+  .page-watch .ib::after {
+    position: fixed;
+    top: auto;
+    bottom: calc(136px + env(safe-area-inset-bottom, 0px));
+    left: 16px;
+    right: 16px;
+    width: auto;
+    max-width: none;
+    transform: none;
+  }
+}

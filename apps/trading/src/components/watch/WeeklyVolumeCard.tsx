@@ -1,4 +1,6 @@
 import { Fragment } from "react";
+import { InfoTip } from "@/components/common/InfoTip";
+import { SnapshotButton } from "@/components/common/SnapshotButton";
 import { parseStyle } from "@/lib/style";
 import type { TerminalViewModel } from "@/terminal/types";
 import { LogoMark } from "@openfutures/ui";
@@ -8,31 +10,13 @@ export function WeeklyVolumeCard({ vm }: { vm: TerminalViewModel }) {
     <section className="mw-card snap-card wk" data-snap="weekly-volume">
       <div className="mw-card-h">
         <div>
-          <h2>Weekly Notional Volume by Venue</h2>
+          <h2 className="h-i">
+            Weekly Notional Volume by Venue (USD)
+            <InfoTip tip="Total value traded each week, stacked by venue. Hover a week for the split." />
+          </h2>
           <p>{vm.mw?.weekly?.sub}</p>
         </div>
-        <button
-          type="button"
-          className="snap-btn"
-          aria-label="Save a 4K snapshot"
-          title="Save a 4K snapshot"
-          onClick={vm.mw?.snap}
-        >
-          <svg
-            width="15"
-            height="15"
-            viewBox="0 0 24 24"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden="true"
-            style={{ fill: "none", stroke: "currentColor" }}
-          >
-            <path d="M4 8h3l2-3h6l2 3h3v11H4z" />
-            <rect x="9" y="10" width="6" height="6" rx="1" />
-          </svg>
-          <span>Snapshot</span>
-        </button>
+        <SnapshotButton onClick={vm.mw?.snap} />
       </div>
       <div className="wk-body">
         <div className="wk-total num">

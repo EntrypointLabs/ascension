@@ -1,4 +1,5 @@
 import { Fragment } from "react";
+import { IconToggle } from "@/components/common/IconToggle";
 import { parseStyle } from "@/lib/style";
 import type { TerminalViewModel } from "@/terminal/types";
 import { LogoMark } from "@openfutures/ui";
@@ -294,20 +295,12 @@ export function MarketsTable({ vm }: { vm: TerminalViewModel }) {
                               {vm.wd?.chart?.value}
                             </b>
                           </div>
-                          <div className="seg-sm" role="group" aria-label="Chart">
-                            {(vm.wdmetrics || []).map((wdmetric: any, i2: any) => (
-                              <Fragment key={i2}>
-                                <button
-                                  type="button"
-                                  className={wdmetric?.cls}
-                                  aria-pressed={wdmetric?.pressed}
-                                  onClick={wdmetric?.pick}
-                                >
-                                  {wdmetric?.label}
-                                </button>
-                              </Fragment>
-                            ))}
-                          </div>
+                          <IconToggle
+                            items={vm.wdmetrics}
+                            label="Chart"
+                            className="seg-sm"
+                            role="group"
+                          />
                         </div>
                         <div className="md-chart">
                           <div className="wm" aria-hidden="true">
@@ -452,20 +445,12 @@ export function MarketsTable({ vm }: { vm: TerminalViewModel }) {
                               <span className={vm.wd?.sel?.dotCls} />
                               <small className="num">{vm.wd?.sel?.lat}</small>
                             </span>
-                            <div className="seg-sm" role="group" aria-label="Exchange detail">
-                              {(vm.wdsel || []).map((wdselItem: any, i2: any) => (
-                                <Fragment key={i2}>
-                                  <button
-                                    type="button"
-                                    className={wdselItem?.cls}
-                                    aria-pressed={wdselItem?.pressed}
-                                    onClick={wdselItem?.pick}
-                                  >
-                                    {wdselItem?.label}
-                                  </button>
-                                </Fragment>
-                              ))}
-                            </div>
+                            <IconToggle
+                              items={vm.wdsel}
+                              label="Exchange detail"
+                              className="seg-sm"
+                              role="group"
+                            />
                           </div>
                           {vm.wd?.selBook ? (
                             <>

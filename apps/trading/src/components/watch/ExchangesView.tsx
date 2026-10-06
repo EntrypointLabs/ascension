@@ -1,4 +1,6 @@
 import { Fragment } from "react";
+import { InfoTip } from "@/components/common/InfoTip";
+import { SnapshotButton } from "@/components/common/SnapshotButton";
 import { ExchangeShareCard } from "@/components/watch/ExchangeShareCard";
 import { ExchangesTableCard } from "@/components/watch/ExchangesTableCard";
 import { WeeklyVolumeCard } from "@/components/watch/WeeklyVolumeCard";
@@ -12,105 +14,122 @@ export function ExchangesView({ vm }: { vm: TerminalViewModel }) {
         <ExchangeShareCard vm={vm} />
         <WeeklyVolumeCard vm={vm} />
       </div>
-      <h3 className="mw-h3">Venue Insights</h3>
+      <h3 className="mw-h3 h-i">
+        Venue Insights
+        <InfoTip tip="A live snapshot of each venue: open interest trend, share of the market, and trading activity" />
+      </h3>
       <div className="ex-cards">
-        {(vm.mw?.exCards || []).map((exCard: any, i: any) => {
-          return (
-            <Fragment key={i}>
-              <article className="exc snap-card" data-snap="venue">
-                <div className="exc-top">
-                  <img className="logo" src={exCard?.logo} data-venue="1" alt="" />
-                  <div>
-                    <b>{exCard?.name}</b>
-                    <small>
-                      {exCard?.type}, {exCard?.markets} markets
-                    </small>
-                  </div>
-                  <span className={`exc-lat num ${exCard?.latCls ?? ""}`}>{exCard?.lat}</span>
-                  <button
-                    type="button"
-                    className="snap-btn"
-                    aria-label="Save a 4K snapshot"
-                    title="Save a 4K snapshot"
-                    onClick={vm.mw?.snap}
-                  >
-                    <svg
-                      width="15"
-                      height="15"
-                      viewBox="0 0 24 24"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      aria-hidden="true"
-                      style={{ fill: "none", stroke: "currentColor" }}
-                    >
-                      <path d="M4 8h3l2-3h6l2 3h3v11H4z" />
-                      <rect x="9" y="10" width="6" height="6" rx="1" />
-                    </svg>
-                  </button>
+        {(vm.mw?.exCards || []).map((exCard: any, i: any) => (
+          <Fragment key={i}>
+            <article className="exc exc2 snap-card" data-snap="venue">
+              <header className="ex2-top">
+                <img className="logo" src={exCard?.logo} data-venue="1" alt="" />
+                <div className="ex2-id">
+                  <b>
+                    {exCard?.name}
+                    <span className="ex2-type">{exCard?.type}</span>
+                  </b>
+                  <small className="num">{exCard?.markets} markets</small>
                 </div>
-                <div className="exc-oi">
-                  <span>Open Interest</span>
+                <span className={`${exCard?.latChip ?? ""} num`}>
+                  <i aria-hidden="true" />
+                  {exCard?.latLabel}
+                </span>
+                <SnapshotButton onClick={vm.mw?.snap} />
+              </header>
+              <p className="ex2-lead">{exCard?.headline}</p>
+              <div className="ex2-oi">
+                <div>
+                  <span className="ex2-k">Open Interest</span>
                   <b className="num">{exCard?.oi}</b>
-                  <em className={`num ${exCard?.chgCls ?? ""}`}>{exCard?.chg} 30d</em>
-                  <svg
-                    className="exc-spark"
-                    viewBox="0 0 100 28"
-                    preserveAspectRatio="none"
-                    aria-hidden="true"
-                  >
-                    <path
-                      d={exCard?.spark}
-                      strokeWidth="1.6"
-                      vectorEffect="non-scaling-stroke"
-                      style={parseStyle(`fill: none; stroke: ${exCard?.sparkCol ?? ""}`)}
-                    />
-                  </svg>
-                </div>
-                <div className="exc-share">
-                  <span>Share of All OI</span>
-                  <span className="num">{exCard?.share}</span>
-                  <span className="exc-bar">
-                    <i
-                      style={parseStyle(
-                        `width: ${exCard?.shareW ?? ""}%; background: ${exCard?.color ?? ""}`,
-                      )}
-                    />
+                  <span className={`num ex2-chg ${exCard?.chgCls ?? ""}`}>
+                    {exCard?.chg} in 30 days
                   </span>
                 </div>
-                <dl className="exc-grid num">
-                  <div>
-                    <dt>24h Volume</dt>
-                    <dd>{exCard?.vol}</dd>
-                  </div>
-                  <div>
-                    <dt>Turnover</dt>
-                    <dd>{exCard?.turn}</dd>
-                  </div>
-                  <div>
-                    <dt>Long / Short</dt>
-                    <dd className={exCard?.lsCls}>{exCard?.ls}</dd>
-                  </div>
-                  <div>
-                    <dt>Funding, APR</dt>
-                    <dd className={exCard?.fundCls}>{exCard?.funding}</dd>
-                  </div>
-                  <div>
-                    <dt>Liquidations</dt>
-                    <dd>{exCard?.liq}</dd>
-                  </div>
-                  <div>
-                    <dt>Top Market</dt>
-                    <dd className="exc-top-m">
-                      <img className="logo" src={exCard?.topLogo} alt="" />
-                      {exCard?.top}
-                    </dd>
-                  </div>
-                </dl>
-              </article>
-            </Fragment>
-          );
-        })}
+                <svg
+                  className="ex2-spark"
+                  viewBox="0 0 100 28"
+                  preserveAspectRatio="none"
+                  aria-hidden="true"
+                >
+                  <path
+                    d={exCard?.area}
+                    fillOpacity="0.12"
+                    style={parseStyle(`fill: ${exCard?.sparkCol ?? ""}`)}
+                  />
+                  <path
+                    d={exCard?.spark}
+                    strokeWidth="1.8"
+                    vectorEffect="non-scaling-stroke"
+                    style={parseStyle(`fill: none; stroke: ${exCard?.sparkCol ?? ""}`)}
+                  />
+                </svg>
+              </div>
+              <div className="ex2-share">
+                <div className="ex2-share-t">
+                  <span>
+                    <b className="num">{exCard?.share}</b> of all open interest
+                  </span>
+                  <span className="num ex2-rank">{exCard?.rank}</span>
+                </div>
+                <span className="exc-bar">
+                  <i
+                    style={parseStyle(
+                      `width: ${exCard?.shareW ?? ""}%; background: ${exCard?.color ?? ""}`,
+                    )}
+                  />
+                </span>
+              </div>
+              <dl className="ex2-grid num">
+                <div>
+                  <dt className="dt-i">
+                    24h Volume
+                    <InfoTip tip="Traded in the last 24 hours" />
+                  </dt>
+                  <dd>{exCard?.vol}</dd>
+                </div>
+                <div>
+                  <dt className="dt-i">
+                    Turnover
+                    <InfoTip tip="24h volume divided by open interest" />
+                  </dt>
+                  <dd>{exCard?.turn}</dd>
+                </div>
+                <div>
+                  <dt className="dt-i">
+                    Long / Short
+                    <InfoTip tip="Ratio of long to short open interest. Above 1 means more traders are long" />
+                  </dt>
+                  <dd className={exCard?.lsCls}>{exCard?.ls}</dd>
+                </div>
+                <div>
+                  <dt className="dt-i">
+                    Funding, APR (%)
+                    <InfoTip tip="Positive: longs pay shorts. Negative: shorts pay longs" />
+                  </dt>
+                  <dd className={exCard?.fundCls}>{exCard?.funding}</dd>
+                </div>
+                <div>
+                  <dt className="dt-i">
+                    Liquidations, 24h
+                    <InfoTip tip="Positions closed by force in the last 24 hours" />
+                  </dt>
+                  <dd>{exCard?.liq}</dd>
+                </div>
+                <div>
+                  <dt className="dt-i">
+                    Top Market
+                    <InfoTip tip="The market with the most open interest on this venue" />
+                  </dt>
+                  <dd className="exc-top-m">
+                    <img className="logo" src={exCard?.topLogo} alt="" />
+                    {exCard?.top}
+                  </dd>
+                </div>
+              </dl>
+            </article>
+          </Fragment>
+        ))}
       </div>
       <ExchangesTableCard vm={vm} />
     </>

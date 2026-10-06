@@ -4,6 +4,7 @@ import { AiPanel } from "@/components/ai/AiPanel";
 import { HomeDetailSheet } from "@/components/home/HomeDetailSheet";
 import { HomePage } from "@/components/home/HomePage";
 import { Onboarding } from "@/components/onboarding/Onboarding";
+import { LiquidityPage } from "@/components/liquidity/LiquidityPage";
 import { AssetDetailsSheet } from "@/components/overlays/AssetDetailsSheet";
 import { Celebration } from "@/components/overlays/Celebration";
 import { FundSheet } from "@/components/overlays/FundSheet";
@@ -48,6 +49,7 @@ export function App(props: any) {
       <WatchPage vm={vm} />
       {vm.wsheetOpen ? <WatchDetailSheet vm={vm} /> : null}
       <PropPage vm={vm} />
+      <LiquidityPage vm={vm} />
       {vm.fund?.open ? <FundSheet vm={vm} /> : null}
       {vm.sh?.open ? <ShareSheet vm={vm} /> : null}
       {vm.ts?.open ? <TpSlSheet vm={vm} /> : null}

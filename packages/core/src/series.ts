@@ -57,3 +57,36 @@ export function sparklinePath(values: number[], width: number, height: number, p
     area: linePath + " L" + width + " " + height + " L0 " + height + " Z",
   };
 }
+
+/**
+ * Daily series of `length` points that ends exactly at `endValue`, shrinking by `drift` per step
+ * going back in time with a random walk of size `volatility` on top. Stable for a given `seedKey`.
+ * With `spikes`, about one point in twenty is pushed up 1.6x to 3.4x.
+ */
+export function seededDriftSeries(
+  seedKey: string,
+  length: number,
+  endValue: number,
+  drift: number,
+  volatility: number,
+  spikes = false,
+): number[] {
+  const rng = seededRandom(hashString(seedKey));
+  const walk: number[] = [];
+  let level = 0;
+  for (let i = 0; i < length; i++) {
+    level += (rng() - 0.5) * volatility;
+    walk.push(level);
+  }
+  const series = new Array<number>(length);
+  for (let i = 0; i < length; i++) {
+    const stepsBack = length - 1 - i;
+    let factor = Math.exp(-stepsBack * drift + walk[i] - walk[length - 1]);
+    if (spikes && rng() < 0.05) {
+      factor *= 1.6 + rng() * 1.8;
+    }
+    series[i] = endValue * factor;
+  }
+  series[length - 1] = endValue;
+  return series;
+}
