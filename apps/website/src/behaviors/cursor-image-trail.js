@@ -2,9 +2,9 @@ import { animate } from 'motion'
 import { $$, canHover, prefersReducedMotion } from '../lib/dom.js'
 
 const IMAGES = [
-  '/assets/images/21Jywa9aZNmmJPgIoGCRU8gs198.webp',
-  '/assets/images/hXrEPGeTfk8bb9yxCh27APmPwko.webp',
-  '/assets/images/1wXID4yGmXdnCkZnGatXAOyZ0.webp',
+  '/assets/logos/btc-mono.svg',
+  '/assets/logos/xau-mono.svg',
+  '/assets/logos/nvda-mono.svg',
 ]
 const SIZE = 150
 const MIN_TRAVEL = 62
@@ -28,7 +28,7 @@ function setup(area) {
     image.src = IMAGES[next]
     image.alt = ''
     image.draggable = false
-    image.style.cssText = `position:absolute;left:${x - SIZE / 2}px;top:${y - SIZE / 2}px;width:${SIZE}px;height:${SIZE}px;object-fit:cover;pointer-events:none;opacity:0`
+    image.style.cssText = `position:absolute;left:${x - SIZE / 2}px;top:${y - SIZE / 2}px;width:${SIZE}px;height:${SIZE}px;object-fit:cover;filter:grayscale(1);pointer-events:none;opacity:0`
     next = (next + 1) % IMAGES.length
     area.append(image)
 

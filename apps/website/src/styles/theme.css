@@ -1,0 +1,77 @@
+/* OpenFutures colours. The page's stylesheets refer to colours by token; this sets those tokens
+   to the trading app's palette (apps/trading/src/styles/tokens.css) so the two read as one product. */
+body {
+  /* Surfaces and lines */
+  --token-3683120b-6b27-44a6-a80e-91baa8533521: #0d0d0d; /* page background */
+  --token-1adf0232-df20-4198-ab4f-d36e0274a52f: #161616; /* surface, and ink on light boxes */
+  --token-80ed092f-b0a5-483f-8e7f-84625e24da31: #131313; /* sunken */
+  --token-300f2be7-0965-4d3d-8922-e14277adb9a1: #1f1f1f; /* line 1 */
+  --token-d0c975d3-7c74-4ecd-b895-2b98f2421014: #242424; /* line 2 */
+  --token-f27e13fa-d646-46d3-a94c-c9a98629d0ad: #2e2e2e; /* line 3 */
+  --token-2255d844-7158-4eb0-9dc1-01533948a5b9: #0b0b0b; /* ink */
+
+  /* Text */
+  --token-1530324f-f67d-478c-b9fa-e0c31727e1b8: #f5f5f4; /* text, and the light boxes */
+  --token-f3c4762a-70cb-4000-8088-314f67c8fab2: #d4d4d2; /* text 2 */
+  --token-6676ae7d-9936-4e11-acef-89e1bf64a2a4: #969694; /* text 3 */
+  --token-214d82e9-7508-466d-b083-f45cbab650c7: #6a6a68; /* muted labels */
+
+  /* Accent: the app's off-white, used for buttons and their hover fill */
+  --token-8133f35e-43ef-4489-9b59-a949408e0fe8: #f5f5f4;
+  --token-711feeef-5006-43e3-ab46-81a81b4b214e: #c9c9c7;
+
+  /* Long blue, the one colour the app spends on direction, carries the decorative shapes */
+  --token-a4bb5149-5ecd-4a5d-bde4-61b8c356caef: #2d63f5;
+  --token-659f9bdd-0b06-48da-8659-94bb4ca5fa66: #3b6ff6;
+  --token-38915b14-ad79-47f9-bda4-7fd1f17d46f8: #6f97ff;
+  --token-6711664c-6232-4477-a2bd-4685e5dc5c39: #a9c1ff;
+  --token-2952c516-ab5d-41c9-b5b5-29b06441f28b: #2d63f5;
+
+  /* Short red, for errors */
+  --token-0df9350f-395e-429d-9c59-9e2c669273dd: #e5484d;
+}
+
+/* A few panels were painted with literal colours instead of tokens. */
+
+/* The risk notice beside the FAQ, on the home and contact pages. */
+.framer-HqDjD .framer-v49zze,
+.framer-HqDjD .framer-i5v0en,
+.framer-vh5ef .framer-6162bg {
+  background: linear-gradient(279deg, #6f97ff 37%, #2d63f5 100%);
+}
+
+/* The field behind the evaluation cards: a raised surface, so the light cards carry the section. */
+.framer-HqDjD .framer-pvye35 {
+  background: linear-gradient(158deg, #1b1b1b 0%, #222222 35%, #2a2a2a 100%);
+}
+
+.of-venue {
+  -webkit-mask: none !important;
+  mask: none !important;
+  background: none !important;
+  aspect-ratio: auto !important;
+  width: auto !important;
+  height: auto !important;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  font-family: "Geist Mono", monospace;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  line-height: 1;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--token-6676ae7d-9936-4e11-acef-89e1bf64a2a4, #969694);
+}
+.of-venue img {
+  display: block;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+}
+.of-venue--md { gap: 12px; font-size: 11px; }
+.of-venue--md img { width: 44px; height: 44px; border-radius: 9px; }
+.of-venue--lg { gap: 20px; font-size: 13px; }
+.of-venue--lg img { width: 35%; height: auto; border-radius: 0; }

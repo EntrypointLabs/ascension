@@ -16,6 +16,7 @@ import { initMouseParallax } from './behaviors/mouse-parallax.js'
 import { initCursorImageTrail } from './behaviors/cursor-image-trail.js'
 import { initGlassSurfaces } from './behaviors/glass-surface.js'
 import { initContactForm } from './behaviors/contact-form.js'
+import { initVenueFlow } from './behaviors/venue-flow.js'
 
 defineLogoElement()
 initTypewriterBoxes()
@@ -35,3 +36,4 @@ initMouseParallax()
 initCursorImageTrail()
 initGlassSurfaces()
 initContactForm()
+initVenueFlow()

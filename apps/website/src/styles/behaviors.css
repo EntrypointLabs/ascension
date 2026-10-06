@@ -109,3 +109,59 @@
   height: 100%;
   fill: var(--token-1530324f-f67d-478c-b9fa-e0c31727e1b8, rgb(255, 255, 255));
 }
+
+.venue-flow {
+  position: relative;
+  width: 100%;
+  height: clamp(380px, 44vw, 620px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.venue-flow canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.venue-flow__mark {
+  position: relative;
+  display: block;
+  width: 152px;
+  height: 152px;
+}
+
+.venue-flow__lane {
+  position: absolute;
+  font-family: "Geist Mono", monospace;
+  font-size: 13px;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+  color: var(--token-6676ae7d-9936-4e11-acef-89e1bf64a2a4, #969694);
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.venue-flow__lane img {
+  display: block;
+  width: 56px;
+  height: 56px;
+  border-radius: 12px;
+}
+
+.venue-flow__lane--right { flex-direction: row-reverse; }
+
+.venue-flow__lane--left { left: 0; }
+.venue-flow__lane--right { right: 0; }
+
+@media (max-width: 809.98px) {
+  .venue-flow__lane { font-size: 11px; gap: 8px; }
+  .venue-flow__lane img { width: 44px; height: 44px; border-radius: 10px; }
+  .venue-flow__mark { width: 112px; height: 112px; }
+}
