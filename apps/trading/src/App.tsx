@@ -2,9 +2,7 @@ import { ProfilePanel } from "@/components/account/ProfilePanel";
 import { AiLauncher } from "@/components/ai/AiLauncher";
 import { AiPanel } from "@/components/ai/AiPanel";
 import { HomeDetailSheet } from "@/components/home/HomeDetailSheet";
-import { HomePage } from "@/components/home/HomePage";
 import { Onboarding } from "@/components/onboarding/Onboarding";
-import { LiquidityPage } from "@/components/liquidity/LiquidityPage";
 import { AssetDetailsSheet } from "@/components/overlays/AssetDetailsSheet";
 import { Celebration } from "@/components/overlays/Celebration";
 import { FundSheet } from "@/components/overlays/FundSheet";
@@ -14,14 +12,11 @@ import { SettingsSheet } from "@/components/overlays/SettingsSheet";
 import { ShareSheet } from "@/components/overlays/ShareSheet";
 import { Toast } from "@/components/overlays/Toast";
 import { TpSlSheet } from "@/components/overlays/TpSlSheet";
-import { PropPage } from "@/components/prop/PropPage";
 import { MobileBar } from "@/components/shell/MobileBar";
 import { TabBar } from "@/components/shell/TabBar";
 import { Ticker } from "@/components/shell/Ticker";
 import { Topbar } from "@/components/shell/Topbar";
-import { TradeLayout } from "@/components/trade/TradeLayout";
-import { WatchDetailSheet } from "@/components/watch/WatchDetailSheet";
-import { WatchPage } from "@/components/watch/WatchPage";
+import { AppRoutes } from "@/router/AppRoutes";
 import { useTerminal } from "@/terminal/useTerminal";
 
 export function App(props: any) {
@@ -43,13 +38,8 @@ export function App(props: any) {
     >
       <Topbar vm={vm} />
       <Ticker vm={vm} />
-      <TradeLayout vm={vm} />
+      <AppRoutes vm={vm} />
       <ProfilePanel vm={vm} />
-      <HomePage vm={vm} />
-      <WatchPage vm={vm} />
-      {vm.wsheetOpen ? <WatchDetailSheet vm={vm} /> : null}
-      <PropPage vm={vm} />
-      <LiquidityPage vm={vm} />
       {vm.fund?.open ? <FundSheet vm={vm} /> : null}
       {vm.sh?.open ? <ShareSheet vm={vm} /> : null}
       {vm.ts?.open ? <TpSlSheet vm={vm} /> : null}

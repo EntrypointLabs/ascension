@@ -23,8 +23,6 @@ export interface AppProps {
   initialWdtab?: string;
   /** Merged over the default state; any state key is accepted. */
   initialState?: Record<string, unknown>;
-  /** Keep `location.pathname` in sync with the active screen. */
-  syncUrl?: boolean;
   /** Embed the hosted TradingView widget instead of the built-in lightweight chart. */
   tvWidget?: boolean;
   /** Endpoint the assistant panel posts chat messages to. */

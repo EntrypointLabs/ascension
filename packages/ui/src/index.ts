@@ -1,5 +1,6 @@
 export { LogoMark, type LogoMarkProps } from "./logo/LogoMark";
 export { LogoTile, type LogoTileProps } from "./logo/LogoTile";
+export { LogoWordmark, type LogoWordmarkProps } from "./logo/LogoWordmark";
 export {
   LOGO_MARK_PATH,
   LOGO_MARK_VIEWBOX,

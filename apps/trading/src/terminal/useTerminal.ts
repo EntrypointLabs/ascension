@@ -1,12 +1,28 @@
 import { useEffect, useReducer, useRef } from "react";
+import { useLocation, useNavigate } from "react-router";
+import { ROUTED_KEYS, routeFromUrl, titleFromState, urlFromState } from "@/router/paths";
 import { Terminal } from "@/terminal/Terminal";
-import { PATH_SCREENS, SCREEN_PATHS } from "@/terminal/routes";
-import type { AppProps, Screen, TerminalViewModel } from "@/terminal/types";
+import type { AppProps, TerminalViewModel } from "@/terminal/types";
 
-/** Owns one Terminal for the lifetime of the component and re-renders whenever its state changes. */
+function propsChooseRoute(props: AppProps): boolean {
+  const initial = props.initialState || {};
+  return !!(
+    props.initialScreen ||
+    props.initialWview ||
+    props.initialWatchOpen ||
+    ROUTED_KEYS.some((key) => key in initial)
+  );
+}
+
 export function useTerminal(props: AppProps): TerminalViewModel {
   const [, forceRender] = useReducer((count: number) => count + 1, 0);
   const terminalRef = useRef<Terminal | null>(null);
+  const location = useLocation();
+  const navigate = useNavigate();
+  const appliedKey = useRef<string | null>(propsChooseRoute(props) ? location.key : null);
+  const settledUrl = useRef<string | null>(null);
+  const mounted = useRef(false);
+
   if (!terminalRef.current) {
     const created = new Terminal(props);
     created._force = forceRender;
@@ -15,6 +31,21 @@ export function useTerminal(props: AppProps): TerminalViewModel {
   const terminal = terminalRef.current;
   const prevProps = useRef(props);
   terminal.props = props;
+
+  const isMobile = (terminal.state.vw || window.innerWidth) < 768;
+  if (appliedKey.current !== location.key) {
+    appliedKey.current = location.key;
+    const route = routeFromUrl(location.pathname, location.search);
+    if (route) {
+      // Applied during render rather than in an effect so the new page never flashes the old state.
+      terminal.state = { ...terminal.state, ...route };
+    }
+    settledUrl.current = urlFromState(terminal.state, isMobile);
+  }
+  const url = urlFromState(terminal.state, isMobile);
+  if (settledUrl.current === null && appliedKey.current === location.key && !mounted.current) {
+    settledUrl.current = url;
+  }
 
   useEffect(() => {
     terminal.componentDidMount();
@@ -31,26 +62,16 @@ export function useTerminal(props: AppProps): TerminalViewModel {
   });
 
   useEffect(() => {
-    if (!props.syncUrl) {
-      return;
+    if (url !== location.pathname + location.search) {
+      navigate(url, { replace: url === settledUrl.current });
     }
-    const onPopState = () => {
-      terminal.setState({ screen: PATH_SCREENS[window.location.pathname] || "detail" });
-    };
-    window.addEventListener("popstate", onPopState);
-    return () => window.removeEventListener("popstate", onPopState);
-  }, [terminal, props.syncUrl]);
+    settledUrl.current = null;
+    mounted.current = true;
+  }, [url, location, navigate]);
 
-  const screen: Screen | undefined = terminal.state.screen;
   useEffect(() => {
-    if (!props.syncUrl || !screen) {
-      return;
-    }
-    const path = SCREEN_PATHS[screen] || "/";
-    if (window.location.pathname !== path) {
-      window.history.pushState(null, "", path);
-    }
-  }, [screen, props.syncUrl]);
+    document.title = titleFromState(terminal.state, isMobile);
+  }, [terminal, url, isMobile]);
 
   return terminal.renderVals();
 }

@@ -1,0 +1,33 @@
+import { lazy, Suspense } from "react";
+import { Route, Routes } from "react-router";
+import { PageFallback, PageErrorBoundary } from "@/components/common/PageFallback";
+import { HomePage } from "@/components/home/HomePage";
+import { TradeLayout } from "@/components/trade/TradeLayout";
+import type { TerminalViewModel } from "@/terminal/types";
+
+const WatchRoute = lazy(() => import("@/router/WatchRoute"));
+const LiquidityPage = lazy(() =>
+  import("@/components/liquidity/LiquidityPage").then((m) => ({ default: m.LiquidityPage })),
+);
+const PropPage = lazy(() =>
+  import("@/components/prop/PropPage").then((m) => ({ default: m.PropPage })),
+);
+
+export function AppRoutes({ vm }: { vm: TerminalViewModel }) {
+  const trade = <TradeLayout vm={vm} />;
+  return (
+    <PageErrorBoundary resetKey={vm.screen}>
+      <Suspense fallback={<PageFallback screen={vm.screen} />}>
+        <Routes>
+          <Route path="/" element={vm.screen === "home" ? <HomePage vm={vm} /> : trade} />
+          <Route path="/trade/:symbol?" element={trade} />
+          <Route path="/watch/:view?" element={<WatchRoute vm={vm} />} />
+          <Route path="/liquidity/:view?" element={<LiquidityPage vm={vm} />} />
+          <Route path="/prop" element={<PropPage vm={vm} />} />
+          <Route path="/profile" element={trade} />
+          <Route path="*" element={trade} />
+        </Routes>
+      </Suspense>
+    </PageErrorBoundary>
+  );
+}
