@@ -1,4 +1,7 @@
 import { Fragment } from "react";
+import { InfoTip } from "@/components/common/InfoTip";
+import { IconToggle } from "@/components/common/IconToggle";
+import { SnapshotButton } from "@/components/common/SnapshotButton";
 import { parseStyle } from "@/lib/style";
 import type { TerminalViewModel } from "@/terminal/types";
 import { LogoMark } from "@openfutures/ui";
@@ -8,50 +11,24 @@ export function WatchChartCard({ vm }: { vm: TerminalViewModel }) {
     <section className="mwc snap-card" data-snap="market-watch" aria-label={vm.mw?.chart?.title}>
       <div className="mwc-head">
         <div className="mwc-t">
-          <h2>{vm.mw?.chart?.title}</h2>
+          <h2 className="h-i">
+            {vm.mw?.chart?.title}
+            <InfoTip tip="Hover or drag across the chart to read every series. Tap a legend item to hide it, and drag the range bar to zoom." />
+          </h2>
           <b className="num">{vm.mw?.chart?.headline}</b>
         </div>
         <div className="mwc-actions">
           {vm.mw?.chart?.hasType ? (
             <>
-              <div className="mwc-types" role="group" aria-label="Chart type">
-                {(vm.mw?.chart?.types || []).map((type: any, i: any) => (
-                  <Fragment key={i}>
-                    <button
-                      type="button"
-                      className={type?.cls}
-                      aria-pressed={type?.pressed}
-                      onClick={type?.pick}
-                    >
-                      {type?.label}
-                    </button>
-                  </Fragment>
-                ))}
-              </div>
+              <IconToggle
+                items={vm.mw?.chart?.types}
+                label="Chart type"
+                className="mwc-types"
+                role="group"
+              />
             </>
           ) : null}
-          <button
-            type="button"
-            className="snap-btn"
-            aria-label="Save a 4K snapshot"
-            title="Save a 4K snapshot"
-            onClick={vm.mw?.snap}
-          >
-            <svg
-              width="15"
-              height="15"
-              viewBox="0 0 24 24"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-              style={{ fill: "none", stroke: "currentColor" }}
-            >
-              <path d="M4 8h3l2-3h6l2 3h3v11H4z" />
-              <rect x="9" y="10" width="6" height="6" rx="1" />
-            </svg>
-            <span>Snapshot</span>
-          </button>
+          <SnapshotButton onClick={vm.mw?.snap} />
           <button type="button" className="mwc-btn" onClick={vm.mw?.chart?.copy}>
             <svg
               width="15"

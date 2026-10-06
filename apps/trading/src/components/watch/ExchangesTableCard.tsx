@@ -1,4 +1,6 @@
 import { Fragment } from "react";
+import { InfoTip } from "@/components/common/InfoTip";
+import { SnapshotButton } from "@/components/common/SnapshotButton";
 import type { TerminalViewModel } from "@/terminal/types";
 
 export function ExchangesTableCard({ vm }: { vm: TerminalViewModel }) {
@@ -6,31 +8,13 @@ export function ExchangesTableCard({ vm }: { vm: TerminalViewModel }) {
     <section className="mw-card snap-card mw-tablecard" data-snap="venues-table">
       <div className="mw-card-h">
         <div>
-          <h2>All Venues</h2>
+          <h2 className="h-i">
+            All Venues
+            <InfoTip tip="Every connected venue with volume, open interest, its top markets and feed health" />
+          </h2>
           <p>{vm.mwTableSub?.venues}</p>
         </div>
-        <button
-          type="button"
-          className="snap-btn"
-          aria-label="Save a 4K snapshot"
-          title="Save a 4K snapshot"
-          onClick={vm.mw?.snap}
-        >
-          <svg
-            width="15"
-            height="15"
-            viewBox="0 0 24 24"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden="true"
-            style={{ fill: "none", stroke: "currentColor" }}
-          >
-            <path d="M4 8h3l2-3h6l2 3h3v11H4z" />
-            <rect x="9" y="10" width="6" height="6" rx="1" />
-          </svg>
-          <span>Snapshot</span>
-        </button>
+        <SnapshotButton onClick={vm.mw?.snap} />
       </div>
       <div className="mw-card-tools">
         <div className="wfilter">
@@ -133,11 +117,11 @@ export function ExchangesTableCard({ vm }: { vm: TerminalViewModel }) {
           </div>
           <div role="columnheader">Chain</div>
           <div role="columnheader">Markets</div>
-          <div role="columnheader">24h Volume</div>
-          <div role="columnheader">Open Interest</div>
+          <div role="columnheader">24h Volume (USD)</div>
+          <div role="columnheader">Open Interest (USD)</div>
           <div role="columnheader">Top by Volume</div>
           <div role="columnheader">Top by OI</div>
-          <div role="columnheader">Funding Range, APR</div>
+          <div role="columnheader">Funding Range, APR (%)</div>
           <div role="columnheader">Feed</div>
           <div role="columnheader">Updated</div>
         </div>
@@ -160,8 +144,8 @@ export function ExchangesTableCard({ vm }: { vm: TerminalViewModel }) {
                 </div>
                 <div role="cell">{exListPItem?.chain}</div>
                 <div role="cell">{exListPItem?.markets}</div>
-                <div role="cell">{exListPItem?.vol}</div>
-                <div role="cell">{exListPItem?.oi}</div>
+                <div role="cell">{exListPItem?.volN}</div>
+                <div role="cell">{exListPItem?.oiN}</div>
                 <div role="cell">
                   <span className="xcell r">
                     <img className="logo xxs" src={exListPItem?.topVolLogo} alt="" />
@@ -175,7 +159,7 @@ export function ExchangesTableCard({ vm }: { vm: TerminalViewModel }) {
                   </span>
                 </div>
                 <div role="cell">
-                  <span className="down">{exListPItem?.fMin}</span> to {exListPItem?.fMax}
+                  <span className="down">{exListPItem?.fMinN}</span> to {exListPItem?.fMaxN}
                 </div>
                 <div role="cell">
                   <span className="feedc r">

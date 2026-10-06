@@ -17,6 +17,7 @@ import {
   formatUsd,
   parseCompact,
 } from "@openfutures/core";
+import { ICON_PATHS, type IconName } from "@/lib/icons";
 import { identicon } from "@/lib/identicon";
 import { buildOrderBook, simulateFill } from "@openfutures/core";
 import { livePrices } from "@/lib/prices";
@@ -2101,6 +2102,11 @@ export function buildViewModel(terminal: Terminal) {
       topOiLogo: LOGOS[topOiMarket.x.sym.toLowerCase()],
       fMin: formatPct(minFunding, 1),
       fMax: formatPct(maxFunding, 1),
+      // Unit-free copies for the desktop table, whose headers carry the units.
+      volN: formatCompact(totalVolume2),
+      oiN: formatCompact(totalOi),
+      fMinN: formatPct(minFunding, 1).replace("%", ""),
+      fMaxN: formatPct(maxFunding, 1).replace("%", ""),
       status: meta.ok ? "Live" : "Delayed",
       dotCls: "sdot" + (meta.ok ? "" : " warn"),
       lat: meta.lat + " ms",
@@ -2221,6 +2227,7 @@ export function buildViewModel(terminal: Terminal) {
   ].map((tab) => {
     const isActive = watchView === tab[0];
     return {
+      ic: ICON_PATHS[tab[0] as IconName],
       label: tab[1],
       cls: isActive ? "is-active" : "",
       pressed: isActive ? "true" : "false",
@@ -2640,6 +2647,7 @@ export function buildViewModel(terminal: Terminal) {
   ].map((tab) => {
     const isActive = detailMetric === tab[0];
     return {
+      ic: ICON_PATHS[tab[0] as IconName],
       label: tab[1],
       cls: isActive ? "is-active" : "",
       pressed: isActive ? "true" : "false",
@@ -2654,6 +2662,7 @@ export function buildViewModel(terminal: Terminal) {
   ].map((tab) => {
     const isActive = detailSubview === tab[0];
     return {
+      ic: ICON_PATHS[tab[0] as IconName],
       label: tab[1],
       cls: isActive ? "is-active" : "",
       pressed: isActive ? "true" : "false",
@@ -7537,6 +7546,9 @@ user: `
     ].map((option) => {
       const isOn = chartType === option[0];
       return {
+        // The chart-type icons are drawn on a baseline, unlike the shared area/bar icons.
+        ic:
+          option[0] === "area" ? "M3 20h18M3 16l5-6 4 3 4-6 5 5v8H3z" : "M6 20V12M12 20V6M18 20v-9",
         label: option[1],
         cls: "mwc-type" + (isOn ? " is-on" : ""),
         pressed: isOn ? "true" : "false",
@@ -7907,7 +7919,7 @@ user: `
           ];
   const exchangeCards = VENUES.slice()
     .sort((a, b) => venueTotals[b.id].oi - venueTotals[a.id].oi)
-    .map((venue: any) => {
+    .map((venue: any, rankIdx: number) => {
       const stats = venueTotals[venue.id];
       const random2 = seededRandom(hashString("exc" + venue.id));
       const oiSeries = generateSeries(
@@ -7943,17 +7955,38 @@ user: `
         color: venueColors[venue.id],
         ls: longShortRatio.toFixed(2),
         lsCls: longShortRatio >= 1 ? "up" : "down",
-        funding: (fundingApr >= 0 ? "+" : "") + fundingApr.toFixed(1) + "%",
+        // The label carries the unit ("Funding, APR (%)"), so the value has no % sign.
+        funding: (fundingApr >= 0 ? "+" : "") + fundingApr.toFixed(1),
         fundCls: fundingApr >= 0 ? "up" : "down",
         liq: "$" + formatCompact(stats.vol * (0.008 + random2() * 0.01)),
         turn: (stats.vol / (stats.oi || 1)).toFixed(2) + "x",
         top: stats.top ? stats.top.x.sym : "",
         topLogo: stats.top ? LOGOS[stats.top.x.sym.toLowerCase()] : "",
-        lat: venueMeta[venue.id].lat + " ms",
-        latCls: venueMeta[venue.id].ok ? "" : "down",
         spark: sparkPath2,
         sparkCol: oiChange >= 0 ? "var(--c-up)" : "var(--c-dn)",
         markets: stats.mk,
+        // Filled area under the open-interest sparkline.
+        area: sparkPath2 + "L100 28L0 28Z",
+        rank: "#" + (rankIdx + 1) + " of " + VENUES.length,
+        // One plain-language sentence summing up the venue.
+        headline:
+          (rankIdx === 0 ? "The largest venue. " : "") +
+          "Open interest is " +
+          (oiChange >= 0 ? "up " : "down ") +
+          Math.abs(oiChange).toFixed(1) +
+          "% in 30 days, " +
+          (longShortRatio > 1.05
+            ? "more traders are long"
+            : longShortRatio < 0.95
+              ? "more traders are short"
+              : "longs and shorts are balanced") +
+          ", and " +
+          (fundingApr >= 0 ? "longs pay shorts " : "shorts pay longs ") +
+          Math.abs(fundingApr).toFixed(1) +
+          "% a year.",
+        latLabel:
+          (venueMeta[venue.id].ok ? "Live, " : "Delayed, ") + venueMeta[venue.id].lat + " ms",
+        latChip: "exc-live" + (venueMeta[venue.id].ok ? "" : " slow"),
       };
     });
   const carryRows = spreadRows
