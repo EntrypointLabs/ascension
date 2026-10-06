@@ -56,6 +56,12 @@ const SORT_HEADS: [SortKey, string][] = [
   ["apr", "APR Today (%)"],
 ];
 
+/** Keeps digits and one decimal point with at most two decimals: "1.2.3x" becomes "1.23". */
+export function cleanAmount(text: string): string {
+  const [whole, ...fraction] = text.replace(/[^0-9.]/g, "").split(".");
+  return fraction.length ? whole + "." + fraction.join("").slice(0, 2) : whole;
+}
+
 function sortValue(vault: VaultSnapshot, key: SortKey): number {
   switch (key) {
     case "apr":
@@ -412,14 +418,14 @@ export function buildLiquidityViewModel(ctx: LiquidityContext) {
       : [],
     amt: state.lqAmt || "",
     onAmt: (event: React.ChangeEvent<HTMLInputElement>) =>
-      set({ lqAmt: event.target.value.replace(/[^0-9.]/g, "") }),
+      set({ lqAmt: cleanAmount(event.target.value) }),
     quick: [25, 50, 100].map((pct) => ({
       label: pct === 100 ? "Max" : pct + "%",
       pick: () => set({ lqAmt: ((balance * pct) / 100).toFixed(2) }),
     })),
     avail: "Available " + formatUsdc(balance) + " USDC",
     estEarn:
-      sheetVault && amount
+      sheetVault && amount && amount <= balance
         ? "About " +
           formatUsdc((((amount * sheetVault.apr) / 100) * sheetVault.term) / 365) +
           " USDC earned by unlock"
