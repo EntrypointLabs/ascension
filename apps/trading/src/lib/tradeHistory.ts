@@ -15,7 +15,7 @@ export function generateTradeHistory(
   const trades: Trade[] = [];
   let time = startTime;
   const openSides: Record<string, Side | null> = {};
-  const venueIds = ["hyperliquid", "binance", "okx", "lighter", "dydx", "variational"];
+  const venueIds = ["hyperliquid", "binance", "bybit", "lighter", "gmx", "variational"];
   const monthNames = [
     "Jan",
     "Feb",

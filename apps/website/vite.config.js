@@ -24,8 +24,28 @@ function cleanUrls() {
   }
 }
 
+// The build hoists the stylesheets every page shares (theme, behaviours, fonts) into one file and
+// links it before the page's own Framer stylesheet, which then overrides the theme. Linking the
+// shared file last restores the source order, where theme and behaviour rules come after Framer's.
+function sharedStylesLast() {
+  return {
+    name: 'shared-styles-last',
+    apply: 'build',
+    transformIndexHtml: {
+      order: 'post',
+      handler(html) {
+        const links = html.match(/<link rel="stylesheet"[^>]*>/g) ?? []
+        const shared = links.find((link) => /\/assets\/main-[^"]+\.css/.test(link))
+        const last = links.at(-1)
+        if (!shared || shared === last) return html
+        return html.replace(shared, '').replace(last, last + shared)
+      },
+    },
+  }
+}
+
 export default defineConfig({
-  plugins: [cleanUrls()],
+  plugins: [cleanUrls(), sharedStylesLast()],
   // The trading app owns Vite's default port; `pnpm dev` at the root starts both.
   server: { port: 5174, strictPort: true },
   preview: { port: 4174 },

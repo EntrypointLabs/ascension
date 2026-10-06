@@ -44,7 +44,7 @@ const RECENT_TRADES: Trade[] = [
   {
     time: "Sep 30, 20:31",
     sym: "BTC",
-    venue: "okx",
+    venue: "bybit",
     action: "Close long",
     side: "short",
     price: 85920,
@@ -55,7 +55,7 @@ const RECENT_TRADES: Trade[] = [
   {
     time: "Sep 29, 09:05",
     sym: "BTC",
-    venue: "okx",
+    venue: "bybit",
     action: "Open long",
     side: "long",
     price: 80000,

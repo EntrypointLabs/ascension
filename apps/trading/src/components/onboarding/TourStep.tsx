@@ -49,8 +49,8 @@ export function TourStep({ vm }: { vm: TerminalViewModel }) {
             </div>
             <h2>Every venue, one ticket</h2>
             <p>
-              OpenFutures compares price, fees and depth across Binance, OKX, Hyperliquid, Lighter,
-              Variational and dYdX for every order, then sends it to the cheapest one. One balance,
+              OpenFutures compares price, fees and depth across Binance, Bybit, Hyperliquid, Lighter,
+              Variational and GMX for every order, then sends it to the cheapest one. One balance,
               one set of positions.
             </p>
           </div>

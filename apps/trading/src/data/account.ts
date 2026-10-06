@@ -5,7 +5,7 @@ export const LIVE_BALANCE = 2500;
 export const LIVE_POSITIONS: Position[] = [
   { id: "p1", sym: "ETH", venue: "hyperliquid", side: "long", lev: 10, qty: 2.5048, entry: 1996.1 },
   { id: "p2", sym: "BTC", venue: "binance", side: "short", lev: 5, qty: 0.05, entry: 87120 },
-  { id: "p3", sym: "SOL", venue: "okx", side: "long", lev: 20, qty: 40, entry: 130.85 },
+  { id: "p3", sym: "SOL", venue: "bybit", side: "long", lev: 20, qty: 40, entry: 130.85 },
 ];
 export const LIVE_ORDERS: Order[] = [
   {
@@ -57,7 +57,7 @@ const RECENT_TRADES: Trade[] = [
   {
     time: "Oct 1, 14:03",
     sym: "SOL",
-    venue: "okx",
+    venue: "bybit",
     action: "Open long",
     side: "long",
     price: 130.85,
@@ -68,7 +68,7 @@ const RECENT_TRADES: Trade[] = [
   {
     time: "Sep 30, 18:40",
     sym: "DOGE",
-    venue: "dydx",
+    venue: "gmx",
     action: "Close long",
     side: "short",
     price: 0.1658,
@@ -79,7 +79,7 @@ const RECENT_TRADES: Trade[] = [
   {
     time: "Sep 30, 11:22",
     sym: "DOGE",
-    venue: "dydx",
+    venue: "gmx",
     action: "Open long",
     side: "long",
     price: 0.1614,

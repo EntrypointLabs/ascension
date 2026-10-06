@@ -1527,16 +1527,16 @@ export function buildViewModel(terminal: Terminal) {
       tiers: 10,
       mmr: 0.4,
     },
-    okx: {
+    bybit: {
       type: "CEX",
       chain: "Off-chain",
       quote: "USDT",
       interval: 8,
-      url: "okx.com/trade-swap/{symbol}",
+      url: "bybit.com/trade/usdt/{symbol}",
       lat: 58,
       ok: true,
       maxLev: 100,
-      nat: (formatNative: any) => formatNative + "-USDT-SWAP",
+      nat: (formatNative: any) => formatNative + "USDT",
       minNotional: 1,
       mult: 0.1,
       listed: "Mar 2020",
@@ -1591,12 +1591,12 @@ export function buildViewModel(terminal: Terminal) {
       tiers: 5,
       mmr: 1,
     },
-    dydx: {
+    gmx: {
       type: "DEX",
-      chain: "dYdX Chain",
+      chain: "Arbitrum",
       quote: "USDC",
       interval: 1,
-      url: "dydx.trade/trade/{symbol}",
+      url: "app.gmx.io/#/trade/long/{symbol}",
       lat: 55,
       ok: true,
       maxLev: 20,
@@ -7108,11 +7108,11 @@ user: `
   ];
   const venueColors: any = {
     binance: "#e5b75a",
-    okx: "#c9c9c7",
+    bybit: "#c9c9c7",
     hyperliquid: "#4fd1b8",
     lighter: "#3b6ff6",
     variational: "#b49cff",
-    dydx: "#7c5cff",
+    gmx: "#7c5cff",
   };
   const categoryTotals: any = {};
   const venueTotals: any = {};

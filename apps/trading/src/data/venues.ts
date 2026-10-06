@@ -4,7 +4,7 @@ import type { Venue } from "@openfutures/core";
 
 const VENUE_SEEDS: Omit<Venue, "logo">[] = [
   { id: "binance", name: "Binance", off: 0.1, fee: 0.045, mul: 1.4, fund: 0.0084, spr: 0.4 },
-  { id: "okx", name: "OKX", off: 0.25, fee: 0.05, mul: 1, fund: 0.01, spr: 0.6 },
+  { id: "bybit", name: "Bybit", off: 0.25, fee: 0.05, mul: 1, fund: 0.01, spr: 0.6 },
   {
     id: "hyperliquid",
     logoKey: "hype",
@@ -25,7 +25,7 @@ const VENUE_SEEDS: Omit<Venue, "logo">[] = [
     fund: 0.0042,
     spr: 1.2,
   },
-  { id: "dydx", name: "dYdX", off: 0.35, fee: 0.05, mul: 0.6, fund: 0.0035, spr: 0.8 },
+  { id: "gmx", name: "GMX", off: 0.35, fee: 0.05, mul: 0.6, fund: 0.0035, spr: 0.8 },
 ];
 
 export const VENUES: Venue[] = VENUE_SEEDS.map((venue) => ({
@@ -35,9 +35,9 @@ export const VENUES: Venue[] = VENUE_SEEDS.map((venue) => ({
 
 export const VENUE_COLORS: Record<string, string> = {
   binance: "var(--v1)",
-  okx: "var(--v2)",
+  bybit: "var(--v2)",
   hyperliquid: "var(--v3)",
   lighter: "var(--v4)",
   variational: "var(--v5)",
-  dydx: "var(--v6)",
+  gmx: "var(--v6)",
 };

@@ -1,15 +1,15 @@
 import aapl from "./logos/aapl.svg?inline";
 import binance from "./logos/binance.svg?inline";
+import bybit from "./logos/bybit.svg?inline";
 import btc from "./logos/btc.svg?inline";
 import doge from "./logos/doge.svg?inline";
-import dydx from "./logos/dydx.svg?inline";
 import eth from "./logos/eth.svg?inline";
 import eurusd from "./logos/eurusd.svg?inline";
 import gbpusd from "./logos/gbpusd.svg?inline";
+import gmx from "./logos/gmx.svg?inline";
 import hype from "./logos/hype.svg?inline";
 import lighter from "./logos/lighter.png?inline";
 import nvda from "./logos/nvda.svg?inline";
-import okx from "./logos/okx.svg?inline";
 import pepe from "./logos/pepe.svg?inline";
 import sol from "./logos/sol.svg?inline";
 import sui from "./logos/sui.svg?inline";
@@ -30,15 +30,15 @@ export const LOGOS: Record<string, string> = {
   aapl,
   binance,
   btc,
+  bybit,
   doge,
-  dydx,
   eth,
   eurusd,
   gbpusd,
+  gmx,
   hype,
   lighter,
   nvda,
-  okx,
   pepe,
   sol,
   sui,
