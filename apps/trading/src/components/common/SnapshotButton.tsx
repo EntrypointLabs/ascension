@@ -1,5 +1,7 @@
+import type { MouseEventHandler } from "react";
+
 /** Icon-only camera button that saves a 4K image of the enclosing `.snap-card`. */
-export function SnapshotButton({ onClick }: { onClick?: (event: any) => void }) {
+export function SnapshotButton({ onClick }: { onClick?: MouseEventHandler<HTMLButtonElement> }) {
   return (
     <button
       type="button"
