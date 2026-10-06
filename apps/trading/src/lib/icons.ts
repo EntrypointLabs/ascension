@@ -5,8 +5,7 @@
 export const ICON_PATHS = {
   markets: "M3 3v18h18M7 15l3-3 3 3 5-6",
   exchanges: "M4 21V9l8-5 8 5v12M9 21v-6h6v6",
-  funding:
-    "M19 5 5 19M7.5 9.5a2 2 0 1 0 0-4 2 2 0 0 0 0 4zM16.5 18.5a2 2 0 1 0 0-4 2 2 0 0 0 0 4z",
+  funding: "M19 5 5 19M7.5 9.5a2 2 0 1 0 0-4 2 2 0 0 0 0 4zM16.5 18.5a2 2 0 1 0 0-4 2 2 0 0 0 0 4z",
   vaults: "M4 5h16v14H4zM12 9.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5zM12 7.5v2M12 14.5v2",
   analytics: "M5 20V11M12 20V4M19 20v-7",
   oi: "M4 18h16M7 18V9M12 18V5M17 18v-6",
