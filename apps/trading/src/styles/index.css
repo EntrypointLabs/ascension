@@ -23,3 +23,4 @@
 @import "./terminal/12-analysis-and-home.css" layer(components);
 @import "./terminal/13-market-watch.css" layer(components);
 @import "./terminal/14-prop-vault.css" layer(components);
+@import "./terminal/15-controls.css" layer(components);

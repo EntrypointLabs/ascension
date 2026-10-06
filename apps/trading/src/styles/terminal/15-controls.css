@@ -1,0 +1,177 @@
+/* Shared controls added after the v90 rebuild: info tips, icon toggles and icon-only snapshot
+   buttons. Loaded after the screen partials so these rules win over the older variants. */
+
+/* Info tip: a small (i) button whose tooltip comes from `data-tip`. */
+.ib {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  margin-left: 6px;
+  padding: 0;
+  border: 0;
+  border-radius: 2px;
+  background: transparent;
+  color: var(--text-3);
+  vertical-align: middle;
+  cursor: help;
+  flex: none;
+}
+.ib:hover,
+.ib:focus-visible {
+  color: var(--text);
+}
+.ib::after {
+  content: attr(data-tip);
+  position: absolute;
+  z-index: 60;
+  left: 50%;
+  bottom: calc(100% + 8px);
+  transform: translateX(-50%);
+  width: max-content;
+  max-width: 260px;
+  padding: 8px 10px;
+  border-radius: 4px;
+  border: 1px solid var(--line-3);
+  background: var(--surface);
+  box-shadow: 0 12px 32px #00000073;
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.45;
+  text-align: left;
+  white-space: normal;
+  letter-spacing: 0;
+  text-transform: none;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.12s;
+}
+.ib:hover::after,
+.ib:focus-visible::after {
+  opacity: 1;
+}
+/* Labels that carry an info tip keep the icon on the text's line. */
+.th-i,
+.dt-i,
+.h-i {
+  display: inline-flex;
+  align-items: center;
+}
+/* Tips in table headers open downwards so the sticky header does not clip them. */
+.lq-th .ib::after,
+.pv-th .ib::after {
+  bottom: auto;
+  top: calc(100% + 8px);
+}
+.lq-th > :last-child .ib::after {
+  left: auto;
+  right: 0;
+  transform: none;
+}
+/* Tips near the left edge of a card open to the right. */
+.mw-kpi .ib::after,
+.lq-kpi .ib::after,
+.lq-stats .ib::after,
+.mw-card-h .ib::after,
+.mw-h3 .ib::after {
+  left: 0;
+  transform: none;
+}
+
+/* Icon toggle: segmented options with an icon tile and a label. */
+.ttg {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px;
+  border-radius: 4px;
+  border: 1px solid var(--line-3);
+  background: var(--sunken);
+  max-width: 100%;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.ttg::-webkit-scrollbar {
+  display: none;
+}
+.ttg > button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 32px;
+  min-width: 0;
+  padding: 0 12px 0 4px;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text-3);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  flex: none;
+}
+.ttg > button:hover:not(.is-active):not(.is-on) {
+  color: var(--text);
+}
+.ttg > button.is-active,
+.ttg > button.is-on {
+  background: var(--active);
+  color: var(--text);
+}
+.ttg .ms-ic {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 2px;
+  color: inherit;
+  flex: none;
+}
+.ttg > button.is-active .ms-ic,
+.ttg > button.is-on .ms-ic {
+  background: var(--text);
+  color: var(--on-inv);
+}
+/* Full-width copy of a page's view toggle, shown on phones only. */
+.ttg.mw-sticky {
+  display: flex;
+  width: auto;
+}
+.ttg.mw-sticky > button {
+  flex: 1;
+}
+@media (max-width: 767px) {
+  .ttg > button {
+    height: 36px;
+    padding: 0 10px 0 4px;
+  }
+  .ttg.mw-sticky {
+    margin: 0 -12px 12px;
+    border-radius: 0;
+    border-left: 0;
+    border-right: 0;
+    background: color-mix(in srgb, var(--bg-m) 92%, transparent);
+  }
+}
+@media (min-width: 768px) {
+  .ttg.mw-sticky {
+    display: none;
+  }
+}
+
+/* Snapshot buttons are icon-only; the label lives in aria-label and title. */
+.snap-btn {
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  justify-content: center;
+  gap: 0;
+}
+.snap-btn span {
+  display: none;
+}
