@@ -117,7 +117,7 @@ export function SearchPalette({ vm }: { vm: TerminalViewModel }) {
             <>
               <div className="srch-empty">
                 <b>No matches for "{vm.srch?.q}"</b>
-                <span>Try a ticker like BTC, an index like US500, or a venue like OKX.</span>
+                <span>Try a ticker like BTC, an index like US500, or a venue like Bybit.</span>
               </div>
             </>
           ) : null}
