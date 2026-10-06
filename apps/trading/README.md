@@ -75,14 +75,14 @@ Tightening those is the natural next step: start with a real `TerminalState` int
 Each screen is its own page at its own URL, so refreshing, sharing a link or using back and
 forward keeps you where you were:
 
-| URL                                            | Page                                                                                  |
-| ---------------------------------------------- | ------------------------------------------------------------------------------------- |
-| `/`                                            | phones: the market list; larger screens redirect to `/trade/:symbol`                  |
-| `/trade/:symbol`                               | trade page for one market, e.g. `/trade/BTC`; `?account=prop` trades the prop account |
-| `/watch`, `/watch/exchanges`, `/watch/funding` | Market Watch views; `?market=BTC` expands that market                                 |
-| `/liquidity`, `/liquidity/analytics`           | Liquidity vaults and analytics                                                        |
-| `/prop`                                        | Prop, which also switches to the prop account                                         |
-| `/profile`                                     | a page on phones; the profile panel over the trade page on larger screens             |
+| URL                                            | Page                                                                                                        |
+| ---------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| `/`                                            | phones: the market list; larger screens redirect to `/trade/:symbol`                                        |
+| `/trade/:symbol`                               | trade page for one market, e.g. `/trade/BTC`; `?account=prop` trades the prop account                       |
+| `/watch`, `/watch/exchanges`, `/watch/funding` | Market Watch views; `?market=BTC` expands that market                                                       |
+| `/liquidity`, `/liquidity/analytics`           | Liquidity vaults and analytics                                                                              |
+| `/prop`                                        | Prop, which also switches to the prop account                                                               |
+| `/profile`                                     | a page on phones; on larger screens the profile panel, which over any other page adds `?profile` to its URL |
 
 The URL owns only where you are: the page, the market and account being traded, the Market
 Watch view and expanded market, the Liquidity view, and whether the profile is open. Everything else is ordinary state that resets on reload

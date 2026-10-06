@@ -23,6 +23,13 @@ function marketParam(value: string | null | undefined): string | null {
 }
 
 export function routeFromUrl(pathname: string, search: string): RouteState | null {
+  const route = matchRoute(pathname, search);
+  return (
+    route && { ...route, profile: !!route.profile || new URLSearchParams(search).has("profile") }
+  );
+}
+
+function matchRoute(pathname: string, search: string): RouteState | null {
   const parts = pathname.replace(/\/+$/, "").split("/").filter(Boolean);
   const [section, param, extra] = parts;
   if (extra) {
@@ -67,6 +74,14 @@ export function routeFromUrl(pathname: string, search: string): RouteState | nul
 }
 
 export function urlFromState(state: TerminalState, isMobile: boolean): string {
+  const url = pageUrl(state, isMobile);
+  if (state.profile && !isMobile && url !== "/profile") {
+    return url + (url.includes("?") ? "&" : "?") + "profile";
+  }
+  return url;
+}
+
+function pageUrl(state: TerminalState, isMobile: boolean): string {
   const screen: Screen = state.screen;
   const trade = "/trade/" + state.sym + (state.account === "prop" ? "?account=prop" : "");
   switch (screen) {
@@ -89,6 +104,9 @@ export function urlFromState(state: TerminalState, isMobile: boolean): string {
 }
 
 export function titleFromState(state: TerminalState, isMobile: boolean): string {
+  if (state.profile && !isMobile) {
+    return "Profile · OpenFutures";
+  }
   const page: Record<Screen, string> = {
     home: isMobile ? "Markets" : state.sym + "-PERP",
     detail: state.sym + "-PERP",
