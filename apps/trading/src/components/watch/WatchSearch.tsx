@@ -1,18 +1,4 @@
 import type { ChangeEventHandler, ReactNode } from "react";
-import type { TerminalViewModel } from "@/terminal/types";
-
-type ViewQueries = Partial<{
-  xq: string;
-  onXq: ChangeEventHandler<HTMLInputElement>;
-  fq: string;
-  onFq: ChangeEventHandler<HTMLInputElement>;
-}>;
-
-/** Per-view queries; falls back to `wq` until the vm provides `xq`/`fq`. */
-export function viewQueries(vm: TerminalViewModel) {
-  const v = vm as TerminalViewModel & ViewQueries;
-  return { xq: v.xq ?? vm.wq, onXq: v.onXq ?? vm.onWq, fq: v.fq ?? vm.wq, onFq: v.onFq ?? vm.onWq };
-}
 
 export function WatchSearch({
   label,

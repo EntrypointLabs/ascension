@@ -3,13 +3,12 @@ import { Dropdown } from "@/components/common/Dropdown";
 import { InfoTip } from "@/components/common/InfoTip";
 import { Pager } from "@/components/common/Pager";
 import { SnapshotButton } from "@/components/common/SnapshotButton";
-import { viewQueries, WatchEmpty, WatchSearch } from "@/components/watch/WatchSearch";
+import { WatchEmpty, WatchSearch } from "@/components/watch/WatchSearch";
 import type { ExchangeRow } from "@/components/watch/types";
 import type { TerminalViewModel } from "@/terminal/types";
 
 export function ExchangesTableCard({ vm }: { vm: TerminalViewModel }) {
   const rows: ExchangeRow[] = vm.exListP || [];
-  const search = viewQueries(vm);
   return (
     <section className="mw-card snap-card mw-tablecard" data-snap="venues-table">
       <div className="mw-card-h">
@@ -25,7 +24,7 @@ export function ExchangesTableCard({ vm }: { vm: TerminalViewModel }) {
       <div className="mw-card-tools">
         <div className="wfilter">
           <Dropdown dd={vm.mw?.dd?.xtype} />
-          <WatchSearch label="Search exchanges" value={search.xq} onChange={search.onXq} />
+          <WatchSearch label="Search exchanges" value={vm.xq} onChange={vm.onXq} />
         </div>
       </div>
       <div className="wt wt-ex num" role="table" aria-label="Exchanges">

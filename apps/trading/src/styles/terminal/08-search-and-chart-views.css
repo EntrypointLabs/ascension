@@ -1989,57 +1989,51 @@ input:focus:not(:focus-visible) {
     margin-top: 4px;
   }
 }
-@keyframes flUpA {
+@keyframes flFadeA {
   0% {
-    background: var(--fl-up);
+    opacity: 1;
   }
   to {
-    background: transparent;
+    opacity: 0;
   }
 }
-@keyframes flUpB {
+@keyframes flFadeB {
   0% {
-    background: var(--fl-up);
+    opacity: 1;
   }
   to {
-    background: transparent;
+    opacity: 0;
   }
 }
-@keyframes flDnA {
-  0% {
-    background: var(--fl-dn);
-  }
-  to {
-    background: transparent;
-  }
+:where(.fl-up-a, .fl-up-b, .fl-dn-a, .fl-dn-b) {
+  position: relative;
+  isolation: isolate;
 }
-@keyframes flDnB {
-  0% {
-    background: var(--fl-dn);
-  }
-  to {
-    background: transparent;
-  }
-}
-.fl-up-a,
-.fl-up-b,
-.fl-dn-a,
-.fl-dn-b {
+.fl-up-a::before,
+.fl-up-b::before,
+.fl-dn-a::before,
+.fl-dn-b::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
   border-radius: 2px;
-  box-decoration-break: clone;
-  -webkit-box-decoration-break: clone;
+  background: var(--fl-up);
+  opacity: 0;
+  pointer-events: none;
+  will-change: opacity;
 }
-.fl-up-a {
-  animation: flUpA 0.9s ease-out;
+.fl-dn-a::before,
+.fl-dn-b::before {
+  background: var(--fl-dn);
 }
-.fl-up-b {
-  animation: flUpB 0.9s ease-out;
+.fl-up-a::before,
+.fl-dn-a::before {
+  animation: flFadeA 0.9s ease-out;
 }
-.fl-dn-a {
-  animation: flDnA 0.9s ease-out;
-}
-.fl-dn-b {
-  animation: flDnB 0.9s ease-out;
+.fl-up-b::before,
+.fl-dn-b::before {
+  animation: flFadeB 0.9s ease-out;
 }
 @keyframes trIn {
   0% {
@@ -2055,17 +2049,35 @@ input:focus:not(:focus-visible) {
 }
 @keyframes livePulse {
   0% {
-    box-shadow: 0 0 #3ecf8e8c;
+    transform: scale(1);
+    opacity: 0.55;
   }
-  70% {
-    box-shadow: 0 0 0 6px #3ecf8e00;
-  }
+  70%,
   to {
-    box-shadow: 0 0 #3ecf8e00;
+    transform: scale(2.5);
+    opacity: 0;
   }
 }
-.sdot:not(.warn) {
+.sdot:not(.warn),
+.st-live {
+  position: relative;
+}
+.sdot:not(.warn)::after,
+.st-live::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: #3ecf8e;
+  pointer-events: none;
   animation: livePulse 2s ease-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .sdot:not(.warn)::after,
+  .st-live::after {
+    animation: none;
+    opacity: 0;
+  }
 }
 @keyframes lastPulse {
   0% {

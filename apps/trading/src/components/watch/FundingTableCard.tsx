@@ -4,7 +4,7 @@ import { InfoTip } from "@/components/common/InfoTip";
 import { Pager } from "@/components/common/Pager";
 import { ScrollRegion } from "@/components/common/ScrollRegion";
 import { SnapshotButton } from "@/components/common/SnapshotButton";
-import { viewQueries, WatchEmpty, WatchSearch } from "@/components/watch/WatchSearch";
+import { WatchEmpty, WatchSearch } from "@/components/watch/WatchSearch";
 import type { FundingRow, VenueLogo } from "@/components/watch/types";
 import { parseStyle } from "@/lib/style";
 import type { TerminalViewModel } from "@/terminal/types";
@@ -12,7 +12,6 @@ import type { TerminalViewModel } from "@/terminal/types";
 export function FundingTableCard({ vm }: { vm: TerminalViewModel }) {
   const rows: FundingRow[] = vm.fmRowsP || [];
   const heads: VenueLogo[] = vm.fmHead || [];
-  const search = viewQueries(vm);
   return (
     <section className="mw-card snap-card mw-tablecard" data-snap="funding-grid">
       <div className="mw-card-h">
@@ -39,7 +38,7 @@ export function FundingTableCard({ vm }: { vm: TerminalViewModel }) {
                 Shorts pay longs
               </span>
             </span>
-            <WatchSearch label="Search markets" value={search.fq} onChange={search.onFq} />
+            <WatchSearch label="Search markets" value={vm.fq} onChange={vm.onFq} />
           </div>
         </div>
       </div>
@@ -157,7 +156,7 @@ export function FundingTableCard({ vm }: { vm: TerminalViewModel }) {
           ))}
         </div>
       </ScrollRegion>
-      {rows.length === 0 ? (
+      {vm.noF ? (
         <WatchEmpty title="No markets match">Try a ticker like ETH, US500 or Gold.</WatchEmpty>
       ) : null}
       <Pager pager={vm.fmPager} scrollTarget=".mw-card" />
