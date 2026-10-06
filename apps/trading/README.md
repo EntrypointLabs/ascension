@@ -25,7 +25,8 @@ pnpm preview      # serve the production build
 
 ```
 src/
-  main.tsx               entry; reads initial props from the URL hash
+  main.tsx               entry; mounts the router and reads initial props from the URL hash
+  router/                URL <-> navigation state, and the page for each route
   App.tsx                root element and the list of screens and overlays
   assets/                logos and avatar, inlined as data URIs
   data/                  seed data: markets, venues, timeframes, account, prop
@@ -69,6 +70,31 @@ and the component props are fully typed. Inside `Terminal.ts` and `viewModel.ts`
 ported from the prototype, state is `Record<string, any>` and many locals are annotated `any`.
 Tightening those is the natural next step: start with a real `TerminalState` interface.
 
+## Pages and URLs
+
+Each screen is its own page at its own URL, so refreshing, sharing a link or using back and
+forward keeps you where you were:
+
+| URL                                            | Page                                                                 |
+| ---------------------------------------------- | -------------------------------------------------------------------- |
+| `/`                                            | phones: the market list; larger screens redirect to `/trade/:symbol` |
+| `/trade/:symbol`                               | trade page for one market, e.g. `/trade/BTC`                         |
+| `/watch`, `/watch/exchanges`, `/watch/funding` | Market Watch views; `?market=BTC` expands that market                |
+| `/liquidity`, `/liquidity/analytics`           | Liquidity vaults and analytics                                       |
+| `/prop`                                        | Prop, which also switches to the prop account                        |
+| `/profile`                                     | profile                                                              |
+
+The URL owns only where you are: the page, the market, the Market Watch view and expanded
+market, and the Liquidity view. Everything else is ordinary state that resets on reload
+(order form inputs, chart settings, sheets, sorting, pagination), and preferences such as
+theme stay in `localStorage`.
+
+`router/paths.ts` maps URLs to that navigation state and back. `useTerminal` applies a new
+location to terminal state before rendering, and pushes a history entry whenever a handler
+changes the page, so existing handlers that call `setState({ screen: "watch" })` navigate
+without knowing about the router. `router/AppRoutes.tsx` renders only the active page; the
+trade page and market list ship in the main bundle and the other pages load on first visit.
+
 ## Styling
 
 Tailwind v4 is set up through `@tailwindcss/vite`.
@@ -90,18 +116,18 @@ time, using the parity checks below to confirm nothing moved.
 
 ## Integration points
 
-| What | Where | Today |
-| --- | --- | --- |
-| Markets, venues, timeframes | `src/data/` | static seed data |
-| Prices | `src/lib/prices.ts`, ticked once a second from `Terminal.componentDidMount` | deterministic simulation that mutates `MARKETS` in place |
-| Order book and fills | `packages/core/src/orderBook.ts` | simulated per market and venue |
-| Positions, orders, history | `src/data/account.ts`, `src/data/prop.ts`; copied into `Terminal` state | seed data, changed only by local handlers |
-| Liquidity vaults, deposits, funded traders | `src/data/liquidity.ts`, `src/terminal/liquidity/` | seeded and deterministic per day; deposits, withdrawals and early exits update `lqBook` in state. Penalty and earnings maths is in `packages/core/src/liquidity.ts` |
-| Order placement, TP/SL, deposits, prop and vault actions | handlers in `src/terminal/viewModel.ts` | update local state and show a toast |
-| Assistant | `aiEndpoint` prop | `POST { system, messages }`, expects `{ text }`; canned local answers when unset |
-| In-app browser | `browseProxy` prop | loads `<proxy>?url=...`; disabled when unset |
-| Chart | `Terminal.syncTv`, candles built in `viewModel.ts` and `packages/core/src/candles.ts` | TradingView Lightweight Charts (npm, v4.2.3) fed simulated candles; `Timeframe.history` sets how many are loaded. `tvWidget` swaps in the hosted TradingView widget |
-| Routing | `syncUrl` prop | mirrors the screen to `/`, `/watch`, `/prop`, `/liquidity`, `/profile` |
+| What                                                     | Where                                                                                 | Today                                                                                                                                                               |
+| -------------------------------------------------------- | ------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Markets, venues, timeframes                              | `src/data/`                                                                           | static seed data                                                                                                                                                    |
+| Prices                                                   | `src/lib/prices.ts`, ticked once a second from `Terminal.componentDidMount`           | deterministic simulation that mutates `MARKETS` in place                                                                                                            |
+| Order book and fills                                     | `packages/core/src/orderBook.ts`                                                      | simulated per market and venue                                                                                                                                      |
+| Positions, orders, history                               | `src/data/account.ts`, `src/data/prop.ts`; copied into `Terminal` state               | seed data, changed only by local handlers                                                                                                                           |
+| Liquidity vaults, deposits, funded traders               | `src/data/liquidity.ts`, `src/terminal/liquidity/`                                    | seeded and deterministic per day; deposits, withdrawals and early exits update `lqBook` in state. Penalty and earnings maths is in `packages/core/src/liquidity.ts` |
+| Order placement, TP/SL, deposits, prop and vault actions | handlers in `src/terminal/viewModel.ts`                                               | update local state and show a toast                                                                                                                                 |
+| Assistant                                                | `aiEndpoint` prop                                                                     | `POST { system, messages }`, expects `{ text }`; canned local answers when unset                                                                                    |
+| In-app browser                                           | `browseProxy` prop                                                                    | loads `<proxy>?url=...`; disabled when unset                                                                                                                        |
+| Chart                                                    | `Terminal.syncTv`, candles built in `viewModel.ts` and `packages/core/src/candles.ts` | TradingView Lightweight Charts (npm, v4.2.3) fed simulated candles; `Timeframe.history` sets how many are loaded. `tvWidget` swaps in the hosted TradingView widget |
+| Routing                                                  | `src/router/`                                                                         | React Router; see [Pages and URLs](#pages-and-urls). The host must serve `index.html` for every path (`vercel.json` does this on Vercel)                            |
 
 Props are declared in `src/terminal/types.ts`. Preferences (theme, accent, routing, onboarding)
 persist in `localStorage` under `openfutures-*` keys.
