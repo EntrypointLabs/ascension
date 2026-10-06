@@ -1,27 +1,83 @@
-import { Fragment } from "react";
-import { InfoTip } from "@/components/common/InfoTip";
+import { Fragment, type KeyboardEvent, type PointerEvent } from "react";
+import { ChartTooltip } from "@/components/common/ChartTooltip";
+import { Dropdown } from "@/components/common/Dropdown";
 import { IconToggle } from "@/components/common/IconToggle";
+import { InfoTip } from "@/components/common/InfoTip";
 import { SnapshotButton } from "@/components/common/SnapshotButton";
+import { Watermark } from "@/components/common/Watermark";
+import type { WatchChart } from "@/components/watch/types";
 import { parseStyle } from "@/lib/style";
 import type { TerminalViewModel } from "@/terminal/types";
-import { LogoMark } from "@openfutures/ui";
+
+const STEP = 0.05;
+
+/** Range bar keys, replayed through the vm's pointer handlers. */
+function brushKey(
+  event: KeyboardEvent<HTMLDivElement>,
+  chart: WatchChart | undefined,
+  winLPct: number,
+  winWPct: number,
+) {
+  const left = winLPct / 100;
+  const width = winWPct / 100;
+  const targets: Record<string, number> = {
+    ArrowLeft: left - STEP,
+    ArrowDown: left - STEP,
+    ArrowRight: left + STEP,
+    ArrowUp: left + STEP,
+    Home: 0,
+    End: 1 - width,
+  };
+  if (!(event.key in targets) || !chart?.bDown || !chart.bMove || !chart.bUp) {
+    return;
+  }
+  event.preventDefault();
+  const el = event.currentTarget;
+  const rect = el.getBoundingClientRect();
+  const next = Math.max(0, Math.min(1 - width, targets[event.key]));
+  if (Math.abs(next - left) < 1e-6) {
+    return;
+  }
+  const pointer = (ratio: number) =>
+    ({
+      currentTarget: el,
+      clientX: rect.left + ratio * rect.width,
+      pointerId: -1,
+    }) as unknown as PointerEvent<HTMLElement>;
+  // Narrow windows sit inside the handle zones, so press beside them to recentre instead.
+  if (width > 0.06) {
+    const grab = left + width / 2;
+    chart.bDown(pointer(grab));
+    chart.bMove(pointer(grab + next - left));
+  } else {
+    chart.bDown(pointer(Math.max(0, Math.min(1, next + width / 2))));
+  }
+  chart.bUp(pointer(0));
+}
 
 export function WatchChartCard({ vm }: { vm: TerminalViewModel }) {
+  const chart: WatchChart | undefined = vm.mw?.chart;
+  const winL = Number(chart?.winL) || 0;
+  const winW = Number(chart?.winW) || 0;
+  const series = (chart?.legend || [])
+    .filter((item) => item.pressed !== "false")
+    .map((item) => item.name)
+    .join(", ");
   return (
-    <section className="mwc snap-card" data-snap="market-watch" aria-label={vm.mw?.chart?.title}>
+    <section className="mwc snap-card" data-snap="market-watch" aria-label={chart?.title}>
       <div className="mwc-head">
         <div className="mwc-t">
           <h2 className="h-i">
-            {vm.mw?.chart?.title}
+            {chart?.title}
             <InfoTip tip="Hover or drag across the chart to read every series. Tap a legend item to hide it, and drag the range bar to zoom." />
           </h2>
-          <b className="num">{vm.mw?.chart?.headline}</b>
+          <b className="num">{chart?.headline}</b>
         </div>
         <div className="mwc-actions">
-          {vm.mw?.chart?.hasType ? (
+          {chart?.hasType ? (
             <>
               <IconToggle
-                items={vm.mw?.chart?.types}
+                items={chart?.types}
                 label="Chart type"
                 className="mwc-types"
                 role="group"
@@ -29,7 +85,13 @@ export function WatchChartCard({ vm }: { vm: TerminalViewModel }) {
             </>
           ) : null}
           <SnapshotButton onClick={vm.mw?.snap} />
-          <button type="button" className="mwc-btn" onClick={vm.mw?.chart?.copy}>
+          <button
+            type="button"
+            className="mwc-btn"
+            aria-label="Copy CSV"
+            title="Copy CSV"
+            onClick={chart?.copy}
+          >
             <svg
               width="15"
               height="15"
@@ -47,169 +109,33 @@ export function WatchChartCard({ vm }: { vm: TerminalViewModel }) {
         </div>
       </div>
       <div className="mwc-ctrls">
-        {vm.mw?.chart?.hasSeg ? (
+        {chart?.hasSeg ? (
           <>
-            <div className="dd">
-              <button
-                type="button"
-                className={vm.mw?.dd?.seg?.btnCls}
-                aria-haspopup="listbox"
-                aria-expanded={vm.mw?.dd?.seg?.openStr}
-                onClick={vm.mw?.dd?.seg?.toggle}
-              >
-                <span className="dd-l">{vm.mw?.dd?.seg?.label}</span>
-                <b>{vm.mw?.dd?.seg?.cur}</b>
-                <svg
-                  className="dd-chev"
-                  width="14"
-                  height="14"
-                  viewBox="0 0 24 24"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  aria-hidden="true"
-                  style={{ fill: "none", stroke: "currentColor" }}
-                >
-                  <path d="m6 9 6 6 6-6" />
-                </svg>
-              </button>
-              {vm.mw?.dd?.seg?.open ? (
-                <>
-                  <button
-                    type="button"
-                    className="dd-scrim"
-                    aria-label="Close"
-                    onClick={vm.mw?.dd?.seg?.close}
-                  />
-                  <div className="dd-menu" role="listbox" aria-label={vm.mw?.dd?.seg?.label}>
-                    {(vm.mw?.dd?.seg?.opts || []).map((opt: any, i: any) => (
-                      <Fragment key={i}>
-                        <button
-                          type="button"
-                          role="option"
-                          aria-selected={opt?.sel}
-                          className={opt?.cls}
-                          onClick={opt?.pick}
-                        >
-                          {opt != null && opt.hasLogo ? (
-                            <>
-                              <img className="logo" src={opt?.logo} data-venue="1" alt="" />
-                            </>
-                          ) : null}
-                          <span>{opt?.label}</span>
-                          <em className="num">{opt?.count}</em>
-                          <svg
-                            className="dd-tick"
-                            width="14"
-                            height="14"
-                            viewBox="0 0 24 24"
-                            strokeWidth="2.4"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            aria-hidden="true"
-                            style={{ fill: "none", stroke: "currentColor" }}
-                          >
-                            <path d="m5 12 5 5 9-10" />
-                          </svg>
-                        </button>
-                      </Fragment>
-                    ))}
-                  </div>
-                </>
-              ) : null}
-            </div>
+            <Dropdown dd={vm.mw?.dd?.seg} />
           </>
         ) : null}
-        <div className="dd">
-          <button
-            type="button"
-            className={vm.mw?.dd?.metric?.btnCls}
-            aria-haspopup="listbox"
-            aria-expanded={vm.mw?.dd?.metric?.openStr}
-            onClick={vm.mw?.dd?.metric?.toggle}
-          >
-            <span className="dd-l">{vm.mw?.dd?.metric?.label}</span>
-            <b>{vm.mw?.dd?.metric?.cur}</b>
-            <svg
-              className="dd-chev"
-              width="14"
-              height="14"
-              viewBox="0 0 24 24"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-              style={{ fill: "none", stroke: "currentColor" }}
-            >
-              <path d="m6 9 6 6 6-6" />
-            </svg>
-          </button>
-          {vm.mw?.dd?.metric?.open ? (
-            <>
-              <button
-                type="button"
-                className="dd-scrim"
-                aria-label="Close"
-                onClick={vm.mw?.dd?.metric?.close}
-              />
-              <div className="dd-menu" role="listbox" aria-label={vm.mw?.dd?.metric?.label}>
-                {(vm.mw?.dd?.metric?.opts || []).map((opt: any, i: any) => (
-                  <Fragment key={i}>
-                    <button
-                      type="button"
-                      role="option"
-                      aria-selected={opt?.sel}
-                      className={opt?.cls}
-                      onClick={opt?.pick}
-                    >
-                      {opt != null && opt.hasLogo ? (
-                        <>
-                          <img className="logo" src={opt?.logo} data-venue="1" alt="" />
-                        </>
-                      ) : null}
-                      <span>{opt?.label}</span>
-                      <em className="num">{opt?.count}</em>
-                      <svg
-                        className="dd-tick"
-                        width="14"
-                        height="14"
-                        viewBox="0 0 24 24"
-                        strokeWidth="2.4"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        aria-hidden="true"
-                        style={{ fill: "none", stroke: "currentColor" }}
-                      >
-                        <path d="m5 12 5 5 9-10" />
-                      </svg>
-                    </button>
-                  </Fragment>
-                ))}
-              </div>
-            </>
-          ) : null}
-        </div>
+        <Dropdown dd={vm.mw?.dd?.metric} />
       </div>
       <div className="mwc-plot">
         <div className="mwc-y num" aria-hidden="true">
-          {(vm.mw?.chart?.yTicks || []).map((yTick: any, i: any) => (
+          {(chart?.yTicks || []).map((yTick, i) => (
             <Fragment key={i}>
               <span style={parseStyle(`top: ${yTick?.y ?? ""}%`)}>{yTick?.label}</span>
             </Fragment>
           ))}
         </div>
         <div className="mwc-area">
-          <div className="wm" aria-hidden="true">
-            <LogoMark />
-            <span>OpenFutures</span>
-          </div>
+          <p className="sr">
+            {chart?.title} chart, {chart?.rangeText}. Latest: {chart?.headline}. Series: {series}.
+          </p>
+          <Watermark />
           <svg
             className="mwc-svg"
             viewBox="0 0 1000 288"
             preserveAspectRatio="none"
             aria-hidden="true"
           >
-            {(vm.mw?.chart?.yTicks || []).map((yTick: any, i: any) => (
+            {(chart?.yTicks || []).map((yTick, i) => (
               <Fragment key={i}>
                 <line
                   x1="0"
@@ -222,7 +148,7 @@ export function WatchChartCard({ vm }: { vm: TerminalViewModel }) {
                 />
               </Fragment>
             ))}
-            {(vm.mw?.chart?.paths || []).map((path: any, i: any) => (
+            {(chart?.paths || []).map((path, i) => (
               <Fragment key={i}>
                 <path
                   d={path?.d}
@@ -235,55 +161,28 @@ export function WatchChartCard({ vm }: { vm: TerminalViewModel }) {
             ))}
           </svg>
           <div className="mwc-gridy" aria-hidden="true">
-            {(vm.mw?.chart?.yTicks || []).map((yTick: any, i: any) => (
+            {(chart?.yTicks || []).map((yTick, i) => (
               <Fragment key={i}>
                 <i style={parseStyle(`top: ${yTick?.y ?? ""}%`)} />
               </Fragment>
             ))}
-            {vm.mw?.chart?.hasZero ? (
+            {chart?.hasZero ? (
               <>
-                <i className="zero" style={parseStyle(`top: ${vm.mw?.chart?.zeroY ?? ""}%`)} />
+                <i className="zero" style={parseStyle(`top: ${chart?.zeroY ?? ""}%`)} />
               </>
             ) : null}
           </div>
-          {vm.mw?.chart?.tip?.show ? (
-            <>
-              <i
-                className="mwc-vline"
-                style={parseStyle(`left: ${vm.mw?.chart?.tip?.vline ?? ""}%`)}
-              />
-              <div
-                className={`${vm.mw?.chart?.tip?.side ?? ""} mwc-tip num`}
-                style={parseStyle(`left: ${vm.mw?.chart?.tip?.left ?? ""}%`)}
-              >
-                <div className="tip-h">
-                  <b>{vm.mw?.chart?.tip?.date}</b>
-                  <b>{vm.mw?.chart?.tip?.total}</b>
-                </div>
-                {(vm.mw?.chart?.tip?.rows || []).map((row: any, i: any) => (
-                  <Fragment key={i}>
-                    <div className="tip-r">
-                      <span>
-                        <i style={parseStyle(`background: ${row?.color ?? ""}`)} />
-                        {row?.name}
-                      </span>
-                      <span>{row?.val}</span>
-                    </div>
-                  </Fragment>
-                ))}
-              </div>
-            </>
-          ) : null}
+          <ChartTooltip tip={chart?.tip} head={[chart?.tip?.date, chart?.tip?.total]} />
           <div
             className="mwc-hit"
-            onPointerMove={vm.mw?.chart?.move}
-            onPointerDown={vm.mw?.chart?.move}
-            onPointerLeave={vm.mw?.chart?.leave}
+            onPointerMove={chart?.move}
+            onPointerDown={chart?.move}
+            onPointerLeave={chart?.leave}
           />
         </div>
       </div>
       <div className="mwc-x num" aria-hidden="true">
-        {(vm.mw?.chart?.xTicks || []).map((xTick: any, i: any) => (
+        {(chart?.xTicks || []).map((xTick, i) => (
           <Fragment key={i}>
             <span className={xTick?.cls} style={parseStyle(`left: ${xTick?.x ?? ""}%`)}>
               {xTick?.label}
@@ -294,42 +193,50 @@ export function WatchChartCard({ vm }: { vm: TerminalViewModel }) {
       <p className="touch-hint">Touch and drag across the chart to read values</p>
       <div className="mwc-range">
         <div className="mwc-rbtns">
-          {(vm.mw?.chart?.ranges || []).map((range: any, i: any) => (
+          {(chart?.ranges || []).map((range, i) => (
             <Fragment key={i}>
-              <button type="button" className={range?.cls} onClick={range?.pick}>
+              <button
+                type="button"
+                className={range?.cls}
+                aria-pressed={/\bis-on\b/.test(range?.cls || "")}
+                onClick={range?.pick}
+              >
                 {range?.label}
               </button>
             </Fragment>
           ))}
         </div>
-        <span className="mwc-rtext num">{vm.mw?.chart?.rangeText}</span>
+        <span className="mwc-rtext num">{chart?.rangeText}</span>
       </div>
       <div
         className="mwc-brush"
         role="slider"
+        tabIndex={0}
         aria-label="Visible date range"
-        aria-valuetext={vm.mw?.chart?.rangeText}
-        onPointerDown={vm.mw?.chart?.bDown}
-        onPointerMove={vm.mw?.chart?.bMove}
-        onPointerUp={vm.mw?.chart?.bUp}
-        onPointerCancel={vm.mw?.chart?.bUp}
+        aria-valuemin={0}
+        aria-valuemax={Math.round(100 - winW)}
+        aria-valuenow={Math.round(winL)}
+        aria-valuetext={chart?.rangeText}
+        onKeyDown={(event) => brushKey(event, chart, winL, winW)}
+        onPointerDown={chart?.bDown}
+        onPointerMove={chart?.bMove}
+        onPointerUp={chart?.bUp}
+        onPointerCancel={chart?.bUp}
       >
         <svg viewBox="0 0 1000 40" preserveAspectRatio="none" aria-hidden="true">
-          <path d={vm.mw?.chart?.miniArea} className="mb-area" />
-          <path d={vm.mw?.chart?.mini} className="mb-line" vectorEffect="non-scaling-stroke" />
+          <path d={chart?.miniArea} className="mb-area" />
+          <path d={chart?.mini} className="mb-line" vectorEffect="non-scaling-stroke" />
         </svg>
         <div
           className="mb-win"
-          style={parseStyle(
-            `left: ${vm.mw?.chart?.winL ?? ""}%; width: ${vm.mw?.chart?.winW ?? ""}%`,
-          )}
+          style={parseStyle(`left: ${chart?.winL ?? ""}%; width: ${chart?.winW ?? ""}%`)}
         >
           <i className="mb-h l" />
           <i className="mb-h r" />
         </div>
       </div>
       <div className="mwc-legend">
-        {(vm.mw?.chart?.legend || []).map((legendItem: any, i: any) => (
+        {(chart?.legend || []).map((legendItem, i) => (
           <Fragment key={i}>
             <button
               type="button"

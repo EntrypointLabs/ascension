@@ -10,7 +10,7 @@ const PAGE_NAMES: Record<string, string> = {
 export function PageFallback({ screen }: { screen: string }) {
   return (
     <section className="page page-loading" aria-busy="true">
-      <span className="sr-only" role="status">
+      <span className="sr" role="status">
         Loading {PAGE_NAMES[screen] || "page"}
       </span>
       <div className="pl-logo" aria-hidden="true">

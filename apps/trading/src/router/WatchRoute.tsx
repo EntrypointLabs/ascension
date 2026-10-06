@@ -6,7 +6,7 @@ export default function WatchRoute({ vm }: { vm: TerminalViewModel }) {
   return (
     <>
       <WatchPage vm={vm} />
-      {vm.wsheetOpen ? <WatchDetailSheet vm={vm} /> : null}
+      {vm.wsheetState === "open" ? <WatchDetailSheet vm={vm} /> : null}
     </>
   );
 }

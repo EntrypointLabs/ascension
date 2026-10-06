@@ -1168,7 +1168,6 @@ img.logo[data-asset]:hover {
   height: 7px;
   border-radius: 2px;
   background: var(--text);
-  animation: livePulse 2s ease-out infinite;
 }
 .st-fg {
   display: inline-flex;

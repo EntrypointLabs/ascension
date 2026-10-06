@@ -1,7 +1,6 @@
-import { useEffect, useRef, type FormEvent, type ReactNode } from "react";
+import { useRef, type FormEvent, type ReactNode } from "react";
+import { useDialogFocus } from "@/components/common/useDialogFocus";
 import type { TerminalViewModel } from "@/terminal/types";
-
-const FOCUSABLE = 'button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
 /**
  * Bottom sheet on phones, centred dialog on larger screens (`.fd-sheet`).
@@ -22,45 +21,7 @@ function Sheet({
   children: ReactNode;
 }) {
   const sheetRef = useRef<HTMLFormElement>(null);
-  const closeRef = useRef(onClose);
-  closeRef.current = onClose;
-
-  useEffect(() => {
-    const opener = document.activeElement as HTMLElement | null;
-    const sheet = sheetRef.current;
-    const first = sheet?.querySelector<HTMLElement>("input, .fd-cta") || sheet;
-    first?.focus();
-    const onKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        event.preventDefault();
-        closeRef.current();
-      } else if (event.key === "Tab" && sheet) {
-        const items = Array.from(sheet.querySelectorAll<HTMLElement>(FOCUSABLE));
-        if (!items.length) {
-          return;
-        }
-        const head = items[0];
-        const tail = items[items.length - 1];
-        if (event.shiftKey && document.activeElement === head) {
-          event.preventDefault();
-          tail.focus();
-        } else if (!event.shiftKey && document.activeElement === tail) {
-          event.preventDefault();
-          head.focus();
-        } else if (!sheet.contains(document.activeElement)) {
-          event.preventDefault();
-          head.focus();
-        }
-      }
-    };
-    document.addEventListener("keydown", onKey);
-    return () => {
-      document.removeEventListener("keydown", onKey);
-      if (opener && opener.isConnected) {
-        opener.focus();
-      }
-    };
-  }, []);
+  useDialogFocus(sheetRef, onClose, "input, .fd-cta");
 
   const submit = (event: FormEvent) => {
     event.preventDefault();

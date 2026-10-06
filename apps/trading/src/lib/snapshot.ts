@@ -89,13 +89,12 @@ export function saveNodeSnapshot(node: any, filename: any, saveApi: any, onDone:
       }
     }
     Array.prototype.forEach.call(
-      clone.querySelectorAll(".snap-btn,.mwc-hit,.kp-tip,.dd-scrim,.dd-menu"),
+      clone.querySelectorAll(".snap-btn,.mwc-hit,.kp-tip,.ib,.dd-scrim,.dd-menu"),
       (el) => {
         el.remove();
       },
     );
     clone.style.margin = "0";
-    const unusedZero = 0;
     const nodeWidth = node.offsetWidth;
     const nodeHeight = node.offsetHeight;
     const padding = 28;

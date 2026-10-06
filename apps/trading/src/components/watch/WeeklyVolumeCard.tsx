@@ -1,11 +1,15 @@
 import { Fragment } from "react";
+import { ChartTooltip } from "@/components/common/ChartTooltip";
+import { Dropdown } from "@/components/common/Dropdown";
 import { InfoTip } from "@/components/common/InfoTip";
 import { SnapshotButton } from "@/components/common/SnapshotButton";
+import { Watermark } from "@/components/common/Watermark";
+import type { Weekly } from "@/components/watch/types";
 import { parseStyle } from "@/lib/style";
 import type { TerminalViewModel } from "@/terminal/types";
-import { LogoMark } from "@openfutures/ui";
 
 export function WeeklyVolumeCard({ vm }: { vm: TerminalViewModel }) {
+  const weekly: Weekly | undefined = vm.mw?.weekly;
   return (
     <section className="mw-card snap-card wk" data-snap="weekly-volume">
       <div className="mw-card-h">
@@ -14,30 +18,31 @@ export function WeeklyVolumeCard({ vm }: { vm: TerminalViewModel }) {
             Weekly Notional Volume by Venue (USD)
             <InfoTip tip="Total value traded each week, stacked by venue. Hover a week for the split." />
           </h2>
-          <p>{vm.mw?.weekly?.sub}</p>
+          <p>{weekly?.sub}</p>
         </div>
         <SnapshotButton onClick={vm.mw?.snap} />
       </div>
       <div className="wk-body">
         <div className="wk-total num">
-          <b>{vm.mw?.weekly?.total}</b>
+          <b>{weekly?.total}</b>
           <span>total in period</span>
         </div>
         <div className="wk-chart">
           <div className="pf-y num" aria-hidden="true">
-            {(vm.mw?.weekly?.yTicks || []).map((yTick: any, i: any) => (
+            {(weekly?.yTicks || []).map((yTick, i) => (
               <Fragment key={i}>
                 <span style={parseStyle(`top: ${yTick?.y ?? ""}%`)}>{yTick?.label}</span>
               </Fragment>
             ))}
           </div>
           <div className="pf-area">
-            <div className="wm" aria-hidden="true">
-              <LogoMark />
-              <span>OpenFutures</span>
-            </div>
+            <p className="sr">
+              Stacked bar chart of weekly notional volume by venue, {weekly?.sub}. {weekly?.total}{" "}
+              total in period. Venues: {(weekly?.legend || []).map((item) => item.name).join(", ")}.
+            </p>
+            <Watermark />
             <div className="mwc-gridy" aria-hidden="true">
-              {(vm.mw?.weekly?.yTicks || []).map((yTick: any, i: any) => (
+              {(weekly?.yTicks || []).map((yTick, i) => (
                 <Fragment key={i}>
                   <i style={parseStyle(`top: ${yTick?.y ?? ""}%`)} />
                 </Fragment>
@@ -49,49 +54,22 @@ export function WeeklyVolumeCard({ vm }: { vm: TerminalViewModel }) {
               preserveAspectRatio="none"
               aria-hidden="true"
             >
-              {(vm.mw?.weekly?.paths || []).map((path: any, i: any) => (
+              {(weekly?.paths || []).map((path, i) => (
                 <Fragment key={i}>
                   <path d={path?.d} style={parseStyle(`fill: ${path?.color ?? ""}`)} />
                 </Fragment>
               ))}
             </svg>
-            {vm.mw?.weekly?.tip?.show ? (
-              <>
-                <i
-                  className="mwc-vline"
-                  style={parseStyle(`left: ${vm.mw?.weekly?.tip?.left ?? ""}%`)}
-                />
-                <div
-                  className={`${vm.mw?.weekly?.tip?.side ?? ""} mwc-tip num`}
-                  style={parseStyle(`left: ${vm.mw?.weekly?.tip?.left ?? ""}%`)}
-                >
-                  <div className="tip-h">
-                    <b>{vm.mw?.weekly?.tip?.date}</b>
-                    <b>{vm.mw?.weekly?.tip?.total}</b>
-                  </div>
-                  {(vm.mw?.weekly?.tip?.rows || []).map((row: any, i: any) => (
-                    <Fragment key={i}>
-                      <div className="tip-r">
-                        <span>
-                          <i style={parseStyle(`background: ${row?.color ?? ""}`)} />
-                          {row?.name}
-                        </span>
-                        <span>{row?.val}</span>
-                      </div>
-                    </Fragment>
-                  ))}
-                </div>
-              </>
-            ) : null}
+            <ChartTooltip tip={weekly?.tip} head={[weekly?.tip?.date, weekly?.tip?.total]} />
             <div
               className="mwc-hit"
-              onPointerMove={vm.mw?.weekly?.move}
-              onPointerDown={vm.mw?.weekly?.move}
-              onPointerLeave={vm.mw?.weekly?.leave}
+              onPointerMove={weekly?.move}
+              onPointerDown={weekly?.move}
+              onPointerLeave={weekly?.leave}
             />
           </div>
           <div className="pf-x num" aria-hidden="true">
-            {(vm.mw?.weekly?.xTicks || []).map((xTick: any, i: any) => (
+            {(weekly?.xTicks || []).map((xTick, i) => (
               <Fragment key={i}>
                 <span className={xTick?.cls} style={parseStyle(`left: ${xTick?.x ?? ""}%`)}>
                   {xTick?.label}
@@ -101,7 +79,7 @@ export function WeeklyVolumeCard({ vm }: { vm: TerminalViewModel }) {
           </div>
         </div>
         <div className="wk-legend">
-          {(vm.mw?.weekly?.legend || []).map((legendItem: any, i: any) => (
+          {(weekly?.legend || []).map((legendItem, i) => (
             <Fragment key={i}>
               <span>
                 <i style={parseStyle(`background: ${legendItem?.color ?? ""}`)} />
@@ -112,216 +90,12 @@ export function WeeklyVolumeCard({ vm }: { vm: TerminalViewModel }) {
         </div>
       </div>
       <div className="wk-filters">
-        <div className="dd">
-          <button
-            type="button"
-            className={vm.mw?.dd?.wkPeriod?.btnCls}
-            aria-haspopup="listbox"
-            aria-expanded={vm.mw?.dd?.wkPeriod?.openStr}
-            onClick={vm.mw?.dd?.wkPeriod?.toggle}
-          >
-            <span className="dd-l">{vm.mw?.dd?.wkPeriod?.label}</span>
-            <b>{vm.mw?.dd?.wkPeriod?.cur}</b>
-            <svg
-              className="dd-chev"
-              width="14"
-              height="14"
-              viewBox="0 0 24 24"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-              style={{ fill: "none", stroke: "currentColor" }}
-            >
-              <path d="m6 9 6 6 6-6" />
-            </svg>
-          </button>
-          {vm.mw?.dd?.wkPeriod?.open ? (
-            <>
-              <button
-                type="button"
-                className="dd-scrim"
-                aria-label="Close"
-                onClick={vm.mw?.dd?.wkPeriod?.close}
-              />
-              <div className="dd-menu" role="listbox" aria-label={vm.mw?.dd?.wkPeriod?.label}>
-                {(vm.mw?.dd?.wkPeriod?.opts || []).map((opt: any, i: any) => (
-                  <Fragment key={i}>
-                    <button
-                      type="button"
-                      role="option"
-                      aria-selected={opt?.sel}
-                      className={opt?.cls}
-                      onClick={opt?.pick}
-                    >
-                      {opt != null && opt.hasLogo ? (
-                        <>
-                          <img className="logo" src={opt?.logo} data-venue="1" alt="" />
-                        </>
-                      ) : null}
-                      <span>{opt?.label}</span>
-                      <em className="num">{opt?.count}</em>
-                      <svg
-                        className="dd-tick"
-                        width="14"
-                        height="14"
-                        viewBox="0 0 24 24"
-                        strokeWidth="2.4"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        aria-hidden="true"
-                        style={{ fill: "none", stroke: "currentColor" }}
-                      >
-                        <path d="m5 12 5 5 9-10" />
-                      </svg>
-                    </button>
-                  </Fragment>
-                ))}
-              </div>
-            </>
-          ) : null}
-        </div>
-        <div className="dd">
-          <button
-            type="button"
-            className={vm.mw?.dd?.wkVenue?.btnCls}
-            aria-haspopup="listbox"
-            aria-expanded={vm.mw?.dd?.wkVenue?.openStr}
-            onClick={vm.mw?.dd?.wkVenue?.toggle}
-          >
-            <span className="dd-l">{vm.mw?.dd?.wkVenue?.label}</span>
-            <b>{vm.mw?.dd?.wkVenue?.cur}</b>
-            <svg
-              className="dd-chev"
-              width="14"
-              height="14"
-              viewBox="0 0 24 24"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-              style={{ fill: "none", stroke: "currentColor" }}
-            >
-              <path d="m6 9 6 6 6-6" />
-            </svg>
-          </button>
-          {vm.mw?.dd?.wkVenue?.open ? (
-            <>
-              <button
-                type="button"
-                className="dd-scrim"
-                aria-label="Close"
-                onClick={vm.mw?.dd?.wkVenue?.close}
-              />
-              <div className="dd-menu" role="listbox" aria-label={vm.mw?.dd?.wkVenue?.label}>
-                {(vm.mw?.dd?.wkVenue?.opts || []).map((opt: any, i: any) => (
-                  <Fragment key={i}>
-                    <button
-                      type="button"
-                      role="option"
-                      aria-selected={opt?.sel}
-                      className={opt?.cls}
-                      onClick={opt?.pick}
-                    >
-                      {opt != null && opt.hasLogo ? (
-                        <>
-                          <img className="logo" src={opt?.logo} data-venue="1" alt="" />
-                        </>
-                      ) : null}
-                      <span>{opt?.label}</span>
-                      <em className="num">{opt?.count}</em>
-                      <svg
-                        className="dd-tick"
-                        width="14"
-                        height="14"
-                        viewBox="0 0 24 24"
-                        strokeWidth="2.4"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        aria-hidden="true"
-                        style={{ fill: "none", stroke: "currentColor" }}
-                      >
-                        <path d="m5 12 5 5 9-10" />
-                      </svg>
-                    </button>
-                  </Fragment>
-                ))}
-              </div>
-            </>
-          ) : null}
-        </div>
-        <div className="dd">
-          <button
-            type="button"
-            className={vm.mw?.dd?.wkCat?.btnCls}
-            aria-haspopup="listbox"
-            aria-expanded={vm.mw?.dd?.wkCat?.openStr}
-            onClick={vm.mw?.dd?.wkCat?.toggle}
-          >
-            <span className="dd-l">{vm.mw?.dd?.wkCat?.label}</span>
-            <b>{vm.mw?.dd?.wkCat?.cur}</b>
-            <svg
-              className="dd-chev"
-              width="14"
-              height="14"
-              viewBox="0 0 24 24"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-              style={{ fill: "none", stroke: "currentColor" }}
-            >
-              <path d="m6 9 6 6 6-6" />
-            </svg>
-          </button>
-          {vm.mw?.dd?.wkCat?.open ? (
-            <>
-              <button
-                type="button"
-                className="dd-scrim"
-                aria-label="Close"
-                onClick={vm.mw?.dd?.wkCat?.close}
-              />
-              <div className="dd-menu" role="listbox" aria-label={vm.mw?.dd?.wkCat?.label}>
-                {(vm.mw?.dd?.wkCat?.opts || []).map((opt: any, i: any) => (
-                  <Fragment key={i}>
-                    <button
-                      type="button"
-                      role="option"
-                      aria-selected={opt?.sel}
-                      className={opt?.cls}
-                      onClick={opt?.pick}
-                    >
-                      {opt != null && opt.hasLogo ? (
-                        <>
-                          <img className="logo" src={opt?.logo} data-venue="1" alt="" />
-                        </>
-                      ) : null}
-                      <span>{opt?.label}</span>
-                      <em className="num">{opt?.count}</em>
-                      <svg
-                        className="dd-tick"
-                        width="14"
-                        height="14"
-                        viewBox="0 0 24 24"
-                        strokeWidth="2.4"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        aria-hidden="true"
-                        style={{ fill: "none", stroke: "currentColor" }}
-                      >
-                        <path d="m5 12 5 5 9-10" />
-                      </svg>
-                    </button>
-                  </Fragment>
-                ))}
-              </div>
-            </>
-          ) : null}
-        </div>
-        {vm.mw?.weekly?.canReset ? (
+        <Dropdown dd={vm.mw?.dd?.wkPeriod} />
+        <Dropdown dd={vm.mw?.dd?.wkVenue} />
+        <Dropdown dd={vm.mw?.dd?.wkCat} />
+        {weekly?.canReset ? (
           <>
-            <button type="button" className="wk-reset" onClick={vm.mw?.weekly?.reset}>
+            <button type="button" className="wk-reset" onClick={weekly?.reset}>
               Reset filters
             </button>
           </>

@@ -27,6 +27,8 @@ import { renderShareCard, saveNodeSnapshot } from "@/lib/snapshot";
 import { DEFAULT_PANE_SIZES } from "@/terminal/layout";
 import { buildLiquidityViewModel } from "@/terminal/liquidity/viewModel";
 
+const seriesCache = new Map<string, number[]>();
+
 /**
  * Derives everything the components render, and the handlers they call, from the terminal's state.
  * Ported from the original bundle: values that flow from `state` are still loosely typed.
@@ -1269,13 +1271,23 @@ export function buildViewModel(terminal: Terminal) {
     daily: formatUsd(planSize * 0.05).replace(".00", "") + " (5%)",
     max: formatUsd(planSize * 0.1).replace(".00", "") + " (10%)",
   };
-  const watchQuery = state.wq.trim().toLowerCase();
+  var marketStatsCache: any = {};
+  function marketMatches(market2: any, query: string) {
+    const needle = query.trim().toLowerCase();
+    return (
+      !needle ||
+      market2.sym.toLowerCase().indexOf(needle) > -1 ||
+      market2.name.toLowerCase().indexOf(needle) > -1
+    );
+  }
+  function firstPage(tableKey: string) {
+    const pages = { ...self.state.tpg };
+    delete pages[tableKey];
+    return pages;
+  }
   let watchMarkets = MARKETS.filter(
     (market2) =>
-      (state.wcat === "all" || market2.cat === state.wcat) &&
-      (!watchQuery ||
-        market2.sym.toLowerCase().indexOf(watchQuery) > -1 ||
-        market2.name.toLowerCase().indexOf(watchQuery) > -1),
+      (state.wcat === "all" || market2.cat === state.wcat) && marketMatches(market2, state.wq),
   );
   function getMarketStats(market2: any) {
     const marketVenues = VENUES.filter(
@@ -1298,7 +1310,9 @@ export function buildViewModel(terminal: Terminal) {
     } else if (state.wsort === "vol") {
       return stats.vol;
     } else if (state.wsort === "fund") {
-      return stats.fund;
+      return getMarketStats2(market2).fAvg;
+    } else if (state.wsort === "gap") {
+      return getMarketStats2(market2).gap;
     } else {
       return stats.oi;
     }
@@ -1332,8 +1346,6 @@ export function buildViewModel(terminal: Terminal) {
       sparkColor: market2.chg >= 0 ? "var(--c-up)" : "var(--c-dn)",
       vol: "$" + formatCompact(stats.vol),
       oi: "$" + formatCompact(stats.oi),
-      fund: (stats.fund >= 0 ? "+" : "") + stats.fund.toFixed(4) + "%",
-      fundCls: stats.fund >= 0 ? "" : "down",
       split: shares.map((share: any) => ({
         w: (share.sh * 100).toFixed(1),
         c: VENUE_COLORS[share.v.id],
@@ -1354,54 +1366,6 @@ export function buildViewModel(terminal: Terminal) {
         self.setState({ watchOpen: isOpen ? null : market2.sym });
       },
       trade: makeSelectMarket(market2.sym),
-      breakdown: shares.map((share: any, index: any) => {
-        const venue: any = share.v;
-        const book = buildOrderBook(market2, venue);
-        const bookMid = (book.asks[0].p + book.bids[0].p) / 2;
-        const bookKey = market2.sym + ":" + venue.id;
-        const isBookOpen2 = state.wbook === bookKey;
-        let askTotal = 0;
-        let bidTotal = 0;
-        const askCum = book.asks.slice(0, 8).map((level) => {
-          askTotal += level.usd;
-          return askTotal;
-        });
-        const bidCum = book.bids.slice(0, 8).map((level) => {
-          bidTotal += level.usd;
-          return bidTotal;
-        });
-        const maxCum = Math.max(askTotal, bidTotal);
-        const bookRows = [];
-        for (let levelIndex = 0; levelIndex < 8; levelIndex++) {
-          bookRows.push({
-            bp: formatPrice(book.bids[levelIndex].p),
-            bs: formatCompact(book.bids[levelIndex].usd),
-            bd: ((bidCum[levelIndex] / maxCum) * 100).toFixed(1),
-            ap: formatPrice(book.asks[levelIndex].p),
-            as: formatCompact(book.asks[levelIndex].usd),
-            ad: ((askCum[levelIndex] / maxCum) * 100).toFixed(1),
-          });
-        }
-        return {
-          bookOpen: isBookOpen2,
-          toggleBook: () => {
-            self.setState({ wbook: isBookOpen2 ? null : bookKey });
-          },
-          book: bookRows,
-          bidPct: Math.round((bidTotal / (askTotal + bidTotal)) * 100),
-          askPct: 100 - Math.round((bidTotal / (askTotal + bidTotal)) * 100),
-          name: venue.name,
-          logo: venue.logo,
-          color: VENUE_COLORS[venue.id],
-          price: formatPrice(bookMid),
-          spread: (((book.asks[0].p - book.bids[0].p) / bookMid) * 10000).toFixed(1) + " bps",
-          vol: "$" + formatCompact(stats.vol * share.sh),
-          oi: "$" + formatCompact(stats.oi * share.sh),
-          fund: (venue.fund * (market2.chg >= 0 ? 1 : -0.6)).toFixed(4) + "%",
-          fee: venue.fee.toFixed(3) + "%",
-          trade: makeSelectMarket(market2.sym, venue.id),
-        };
-      }),
     };
   }
   let watchRows = watchMarkets.map(buildWatchRow);
@@ -1409,78 +1373,6 @@ export function buildViewModel(terminal: Terminal) {
   if (openWatchRow) {
     openWatchRow.trade = makeSelectMarket(openWatchRow.sym);
   }
-  const totalOpenInterest = MARKETS.reduce((sum, market2) => sum + parseCompact(market2.oi), 0);
-  const totalVolume = MARKETS.reduce((sum, market2) => sum + parseCompact(market2.vol), 0);
-  MARKETS.slice().sort((a, b) => b.chg - a.chg);
-  MARKETS.filter((market2) => market2.cat === "Crypto").map(
-    (market2) => getMarketStats(market2).fund,
-  );
-  function getVenueBreakdown(metric: any) {
-    const totals: any = {};
-    VENUES.forEach((venue) => {
-      totals[venue.id] = 0;
-    });
-    MARKETS.forEach((market2) => {
-      const stats = getMarketStats(market2);
-      const value = metric === "oi" ? stats.oi : stats.vol;
-      stats.avs.forEach((venue) => {
-        totals[venue.id] += (value * venue.mul) / stats.sm;
-      });
-    });
-    const grandTotal = Object.keys(totals).reduce((sum, key) => sum + totals[key], 0);
-    return VENUES.map((venue: any) => ({
-      id: venue.id,
-      logo: venue.logo,
-      name: venue.name,
-      c: VENUE_COLORS[venue.id],
-      val: totals[venue.id],
-      w: ((totals[venue.id] / grandTotal) * 100).toFixed(1),
-      pct: Math.round((totals[venue.id] / grandTotal) * 100) + "%",
-    })).sort((a, b) => b.val - a.val);
-  }
-  const oiByVenue = getVenueBreakdown("oi");
-  const volumeByVenue = getVenueBreakdown("vol");
-  const marketFunding = MARKETS.map((market2) => {
-    const stats = getMarketStats(market2);
-    return { f: stats.fund, oi: stats.oi };
-  });
-  const weightedFunding =
-    marketFunding.reduce((sum, item) => sum + item.f * item.oi, 0) /
-    marketFunding.reduce((sum, item) => sum + item.oi, 0);
-  let summaryCards: any = [
-    {
-      label: "Open Interest",
-      value: "$" + formatCompact(totalOpenInterest),
-      sub: "Largest on " + oiByVenue[0].name,
-      hasSplit: true,
-      split: oiByVenue,
-      hasStack: false,
-    },
-    {
-      label: "24h Volume",
-      value: "$" + formatCompact(totalVolume),
-      sub: "Largest on " + volumeByVenue[0].name,
-      hasSplit: true,
-      split: volumeByVenue,
-      hasStack: false,
-    },
-    {
-      label: "Average Funding, 1h",
-      value: (weightedFunding >= 0 ? "+" : "") + weightedFunding.toFixed(4) + "%",
-      sub: "Weighted by open interest",
-      hasSplit: false,
-      split: [],
-      hasStack: false,
-    },
-    {
-      label: "Venues",
-      value: VENUES.length + " live",
-      sub: MARKETS.length + " markets",
-      hasSplit: false,
-      split: [],
-      hasStack: true,
-    },
-  ];
   const categoryPills2 = MARKET_CATEGORIES.map((category) => {
     const isActive = state.wcat === category[0];
     return {
@@ -1493,7 +1385,7 @@ export function buildViewModel(terminal: Terminal) {
       cls: isActive ? "pill is-active" : "pill",
       pressed: isActive ? "true" : "false",
       pick: () => {
-        self.setState({ wcat: category[0] });
+        self.setState({ wcat: category[0], tpg: firstPage("markets") });
       },
     };
   });
@@ -1680,22 +1572,8 @@ export function buildViewModel(terminal: Terminal) {
   function annualizeFunding(hourlyRate: any) {
     return hourlyRate * 24 * 365;
   }
-  var marketStatsCache: any = {};
   function getMarketStats2(market2: any) {
     return (marketStatsCache[market2.sym] ||= buildMarketStats(market2));
-  }
-  if (state.wsort === "gap") {
-    watchMarkets = watchMarkets
-      .slice()
-      .sort((a, b) => (getMarketStats2(a).gap - getMarketStats2(b).gap) * state.wdir);
-  }
-  if (state.wsort === "fund") {
-    watchMarkets = watchMarkets
-      .slice()
-      .sort((a, b) => (getMarketStats2(a).fAvg - getMarketStats2(b).fAvg) * state.wdir);
-  }
-  if (state.wsort === "gap" || state.wsort === "fund") {
-    watchRows = watchMarkets.map(buildWatchRow);
   }
   watchRows.forEach((row: any) => {
     const market2 = findMarket(row.sym);
@@ -1707,26 +1585,18 @@ export function buildViewModel(terminal: Terminal) {
       2,
       Math.min(98, ((market2.price - stats.low) / (stats.high - stats.low)) * 100),
     ).toFixed(1);
+    row.fund = formatPct(stats.fAvg, 4);
     row.apr = formatPct(annualizeFunding(stats.fAvg), 2);
     row.fundCls = stats.fAvg >= 0 ? "" : "down";
     row.fsp = annualizeFunding(stats.fSpread).toFixed(2) + "%";
     row.gap = stats.gap.toFixed(1) + " bps";
     row.buyPct = Math.round(stats.buyShare * 100);
   });
-  const watchDetail: any = {
-    kpis: [],
-    venues: [],
-    funding: [],
-    fundLines: [],
-    oiShares: [],
-    liqs: [],
-    specs: [],
-  };
+  const watchDetail: any = { venues: [], specs: [] };
   if (state.watchOpen) {
     const openMarket = findMarket(state.watchOpen);
     const openStats = getMarketStats2(openMarket);
     const openAggregate = openStats.w0;
-    var detailTab = state.wdtab || "venues";
     const rng = seededRandom(hashString(openMarket.sym + "series"));
     let weightedBasisBps = 0;
     watchDetail.venues = openStats.vm
@@ -1741,8 +1611,6 @@ export function buildViewModel(terminal: Terminal) {
         const markPrice = midPrice2 * (1 + (rng() - 0.5) * 0.00002);
         const basisBps = ((markPrice - indexPrice) / indexPrice) * 10000;
         weightedBasisBps += basisBps * venueStat.sh;
-        const bookKey = openMarket.sym + ":" + venue.id;
-        const isBookOpen2 = state.wbook === bookKey;
         let askCumulative = 0;
         let bidCumulative = 0;
         const askDepth = book.asks.slice(0, 8).map((level: any) => {
@@ -1783,10 +1651,6 @@ export function buildViewModel(terminal: Terminal) {
           oiShare: Math.round(venueStat.sh * 100) + "% share",
           lat: meta.lat + " ms",
           dotCls: "sdot" + (meta.ok ? "" : " warn"),
-          bookOpen: isBookOpen2,
-          toggleBook: () => {
-            self.setState({ wbook: isBookOpen2 ? null : bookKey });
-          },
           book: bookRows,
           mid: formatPrice(midPrice2),
           bidPct: Math.round((bidCumulative / (askCumulative + bidCumulative)) * 100),
@@ -1794,165 +1658,6 @@ export function buildViewModel(terminal: Terminal) {
           trade: makeSelectMarket(openMarket.sym, venue.id),
         };
       });
-    const nowSeconds = Math.floor(state.now / 1000);
-    watchDetail.funding = openStats.vm.map((venueStat: any) => {
-      const meta = venueMeta[venueStat.v.id];
-      const intervalHours = meta.interval;
-      const hourlyRate = venueStat.fh;
-      const currentRate = hourlyRate * intervalHours;
-      const predictedRate = currentRate * (0.85 + rng() * 0.3);
-      const secondsToNext = intervalHours * 3600 - (nowSeconds % (intervalHours * 3600));
-      return {
-        name: venueStat.v.name,
-        logo: venueStat.v.logo,
-        cur: formatPct(currentRate, 4),
-        cls: currentRate >= 0 ? "" : "down",
-        pred: formatPct(predictedRate, 4),
-        interval: intervalHours + "h",
-        next:
-          pad2(Math.floor(secondsToNext / 3600)) +
-          ":" +
-          pad2(Math.floor((secondsToNext % 3600) / 60)) +
-          ":" +
-          pad2(secondsToNext % 60),
-        h1: formatPct(hourlyRate, 4),
-        h8: formatPct(hourlyRate * 8, 4),
-        h24: formatPct(hourlyRate * 24, 4),
-        apr: formatPct(annualizeFunding(hourlyRate), 2),
-        aprCls: hourlyRate >= 0 ? "" : "down",
-        cap: intervalHours === 8 ? "+0.75% / -0.75%" : "+4.00% / -4.00%",
-        cum: formatPct(hourlyRate * 24 * 7 * (0.85 + rng() * 0.3), 3),
-      };
-    });
-    const topVenueSeries = openStats.vm
-      .slice()
-      .sort((a: any, b: any) => b.sh - a.sh)
-      .slice(0, 4)
-      .map((venueStat: any) => {
-        const annualRate = annualizeFunding(venueStat.fh);
-        const series = [];
-        let value = annualRate * 0.6;
-        for (let i = 0; i < 42; i++) {
-          value += (annualRate - value) * 0.08 + (rng() - 0.5) * Math.abs(annualRate) * 0.25;
-          series.push(value);
-        }
-        series[41] = annualRate;
-        return { o: venueStat, vals: series };
-      });
-    const allFundingValues = [].concat.apply(
-      [0],
-      topVenueSeries.map((entry: any) => entry.vals),
-    );
-    var fundingMin = Math.min.apply(null, allFundingValues);
-    var fundingMax = Math.max.apply(null, allFundingValues);
-    watchDetail.fundLines = topVenueSeries.map((entry: any) => ({
-      name: entry.o.v.name,
-      c: VENUE_COLORS[entry.o.v.id] === "var(--v6)" ? "var(--v4)" : VENUE_COLORS[entry.o.v.id],
-      d: buildLinePath(entry.vals, fundingMin, fundingMax),
-    }));
-    watchDetail.fundZero = "M0 " + valueToFundingY(0, fundingMin, fundingMax).toFixed(1) + "H1000";
-    watchDetail.fundHi = formatPct(fundingMax, 1);
-    watchDetail.fundLo = formatPct(fundingMin, 1);
-    const oiHistory = [];
-    let oiValue = openAggregate.oi * (0.88 + rng() * 0.08);
-    for (let i = 0; i < 42; i++) {
-      oiValue *= 1 + (rng() - 0.47) * 0.02;
-      oiHistory.push(oiValue);
-    }
-    oiHistory[41] = openAggregate.oi;
-    const oiMin = Math.min.apply(null, oiHistory) * 0.995;
-    const oiMax = Math.max.apply(null, oiHistory) * 1.005;
-    watchDetail.oiLine = buildLinePath(oiHistory, oiMin, oiMax);
-    watchDetail.oiArea = watchDetail.oiLine + " L1000 200 L0 200 Z";
-    watchDetail.oiHi = "$" + formatCompact(oiMax);
-    watchDetail.oiLo = "$" + formatCompact(oiMin);
-    watchDetail.oiChange =
-      formatPct(((openAggregate.oi - oiHistory[0]) / oiHistory[0]) * 100, 1) + " in 7 days";
-    watchDetail.oiTotal = "$" + formatCompact(openAggregate.oi) + " total";
-    watchDetail.oiShares = openStats.vm
-      .slice()
-      .sort((venueStat: any, a: any) => a.sh - venueStat.sh)
-      .map((venueStat: any) => ({
-        name: venueStat.v.name,
-        logo: venueStat.v.logo,
-        c: VENUE_COLORS[venueStat.v.id],
-        w: (venueStat.sh * 100).toFixed(1),
-        pct: Math.round(venueStat.sh * 100) + "%",
-        usd: "$" + formatCompact(openAggregate.oi * venueStat.sh),
-        base:
-          formatQty((openAggregate.oi * venueStat.sh) / openMarket.price) + " " + openMarket.sym,
-      }));
-    let longBarsPath = "";
-    let shortBarsPath = "";
-    const longSamples = [];
-    var shortSamples = [];
-    let maxSample = 0;
-    for (let i = 0; i < 24; i++) {
-      const longSample = rng() * rng();
-      const shortSample = rng() * rng();
-      longSamples.push(longSample);
-      shortSamples.push(shortSample);
-      maxSample = Math.max(maxSample, longSample, shortSample);
-    }
-    for (let i = 0; i < 24; i++) {
-      var flowBarLeft = ((i * 1000) / 24 + 6).toFixed(1);
-      var flowBarRight = (((i + 1) * 1000) / 24 - 6).toFixed(1);
-      const shortHeight = (shortSamples[i] / maxSample) * 90;
-      const longHeight = (longSamples[i] / maxSample) * 90;
-      shortBarsPath +=
-        "M" + flowBarLeft + " 100V" + (100 - shortHeight).toFixed(1) + "H" + flowBarRight + "V100Z";
-      longBarsPath +=
-        "M" + flowBarLeft + " 100V" + (100 + longHeight).toFixed(1) + "H" + flowBarRight + "V100Z";
-    }
-    watchDetail.liqShortBars = shortBarsPath;
-    watchDetail.liqLongBars = longBarsPath;
-    watchDetail.liqLong = "$" + formatCompact(openStats.liqLong);
-    watchDetail.liqShort = "$" + formatCompact(openStats.liqShort);
-    for (let i = 0; i < 8; i++) {
-      const venue = openStats.vm[Math.floor(rng() * openStats.vm.length)].v;
-      const isLong2 = rng() < openStats.liqLong / (openStats.liqLong + openStats.liqShort);
-      const liqTime = new Date((nowSeconds - i * (60 + Math.floor(rng() * 600))) * 1000);
-      watchDetail.liqs.push({
-        time:
-          pad2(liqTime.getUTCHours()) +
-          ":" +
-          pad2(liqTime.getUTCMinutes()) +
-          ":" +
-          pad2(liqTime.getUTCSeconds()),
-        name: venue.name,
-        logo: venue.logo,
-        side: isLong2 ? "Long" : "Short",
-        sideCls: isLong2 ? "short" : "long",
-        price: "$" + formatPrice(openMarket.price * (1 + (rng() - 0.5) * 0.004)),
-        size: "$" + formatCompact(2000 + rng() * 90000),
-      });
-    }
-    const takerBuyVolume = openAggregate.vol * openStats.buyShare;
-    var takerSellVolume: any = openAggregate.vol - takerBuyVolume;
-    const cvdSeries = [];
-    let cvd = 0;
-    for (var i2 = 0; i2 < 48; i2++) {
-      cvd += ((openStats.buyShare - 0.5 + (rng() - 0.5) * 0.3) * openAggregate.vol) / 48;
-      cvdSeries.push(cvd);
-    }
-    const cvdMin = Math.min.apply(null, cvdSeries.concat([0]));
-    const cvdMax = Math.max.apply(null, cvdSeries.concat([0]));
-    watchDetail.cvdLine = buildLinePath(cvdSeries, cvdMin, cvdMax);
-    watchDetail.cvdZero = "M0 " + valueToFundingY(0, cvdMin, cvdMax).toFixed(1) + "H1000";
-    watchDetail.cvdHi = (cvdMax >= 0 ? "+$" : "-$") + formatCompact(Math.abs(cvdMax));
-    watchDetail.cvdLo = (cvdMin >= 0 ? "+$" : "-$") + formatCompact(Math.abs(cvdMin));
-    watchDetail.cvd = (cvd >= 0 ? "+$" : "-$") + formatCompact(Math.abs(cvd)) + " net";
-    const longShortRatio = (openStats.buyShare / (1 - openStats.buyShare)) * (0.9 + rng() * 0.2);
-    var longPct: any = Math.round((longShortRatio / (1 + longShortRatio)) * 100);
-    watchDetail.lsr = longShortRatio.toFixed(2);
-    watchDetail.longPct = longPct;
-    watchDetail.shortPct = 100 - longPct;
-    watchDetail.tbuy = "$" + formatCompact(takerBuyVolume);
-    watchDetail.tsell = "$" + formatCompact(takerSellVolume);
-    watchDetail.imb =
-      (takerBuyVolume - takerSellVolume >= 0 ? "+$" : "-$") +
-      formatCompact(Math.abs(takerBuyVolume - takerSellVolume));
-    watchDetail.imbCls = takerBuyVolume - takerSellVolume >= 0 ? "" : "down";
     const tickSize2 = Math.pow(10, Math.floor(Math.log10(openMarket.price)) - 4);
     watchDetail.specs = openStats.vm.map((venueStat: any) => {
       const meta = venueMeta[venueStat.v.id];
@@ -1978,90 +1683,21 @@ export function buildViewModel(terminal: Terminal) {
         status: "Trading",
       };
     });
-    watchDetail.kpis = [
-      {
-        label: "Price, VWAP",
-        value: "$" + formatPrice(openStats.vwap),
-        sub: "Across " + openAggregate.avs.length + " exchanges",
-        cls: "",
-      },
-      {
-        label: "24h High / Low",
-        value: formatPrice(openStats.high) + " / " + formatPrice(openStats.low),
-        sub: "Open " + formatPrice(openStats.open),
-        cls: "",
-      },
-      {
-        label: "Basis",
-        value: (weightedBasisBps >= 0 ? "+" : "") + weightedBasisBps.toFixed(1) + " bps",
-        sub: "Mark vs index",
-        cls: weightedBasisBps >= 0 ? "" : "down",
-      },
-      {
-        label: "Price Gap",
-        value: openStats.gap.toFixed(1) + " bps",
-        sub: "Highest vs lowest venue",
-        cls: "",
-      },
-      {
-        label: "Funding Spread",
-        value: annualizeFunding(openStats.fSpread).toFixed(2) + "%",
-        sub: "APR, highest minus lowest",
-        cls: "",
-      },
-      {
-        label: "Volume / OI",
-        value: "$" + formatCompact(openAggregate.vol) + " / $" + formatCompact(openAggregate.oi),
-        sub: "Aggregated",
-        cls: "",
-      },
-      {
-        label: "Liquidations, 24h",
-        value: "$" + formatCompact(openStats.liqLong + openStats.liqShort),
-        sub:
-          Math.round((openStats.liqLong / (openStats.liqLong + openStats.liqShort)) * 100) +
-          "% longs",
-        cls: "",
-      },
-      {
-        label: "Long / Short",
-        value: longShortRatio.toFixed(2),
-        sub: "Taker buys " + Math.round(openStats.buyShare * 100) + "%",
-        cls: "",
-      },
-    ];
+    const takerBuyVolume = openAggregate.vol * openStats.buyShare;
+    const takerSellVolume = openAggregate.vol - takerBuyVolume;
+    const longShortRatio = (openStats.buyShare / (1 - openStats.buyShare)) * (0.9 + rng() * 0.2);
+    watchDetail.basis = (weightedBasisBps >= 0 ? "+" : "") + weightedBasisBps.toFixed(1) + " bps";
+    watchDetail.basisCls = weightedBasisBps >= 0 ? "" : "down";
+    watchDetail.lsr = longShortRatio.toFixed(2);
+    watchDetail.tbuy = "$" + formatCompact(takerBuyVolume);
+    watchDetail.tsell = "$" + formatCompact(takerSellVolume);
     watchDetail.name = openMarket.name;
     watchDetail.sym = openMarket.sym;
     watchDetail.logo = LOGOS[openMarket.sym.toLowerCase()];
     watchDetail.vwap = formatPrice(openStats.vwap);
     watchDetail.chgText = formatChange(openMarket.chg);
     watchDetail.dir = openMarket.chg >= 0 ? "up" : "down";
-    watchDetail.trade = makeSelectMarket(openMarket.sym);
-    watchDetail.tVenues = detailTab === "venues";
-    watchDetail.tFunding = detailTab === "funding";
-    watchDetail.tOi = detailTab === "oi";
-    watchDetail.tLiq = detailTab === "liq";
-    watchDetail.tFlow = detailTab === "flow";
-    watchDetail.tSpecs = detailTab === "specs";
   }
-  const detailTabs = [
-    ["venues", "Exchanges"],
-    ["funding", "Funding"],
-    ["oi", "Open Interest"],
-    ["liq", "Liquidations"],
-    ["flow", "Flow"],
-    ["specs", "Contract Specs"],
-  ].map((tab) => {
-    const isActive = (state.wdtab || "venues") === tab[0];
-    return {
-      label: tab[1],
-      cls: isActive ? "tab is-active" : "tab",
-      pressed: isActive ? "true" : "false",
-      pick: () => {
-        self.setState({ wdtab: tab[0] });
-      },
-    };
-  });
   const venueRows2 = VENUES.map((venue: any) => {
     const meta = venueMeta[venue.id];
     const venueMarkets = MARKETS.filter(
@@ -2120,7 +1756,10 @@ export function buildViewModel(terminal: Terminal) {
   const fundingUnitHours = fundingUnit === "1h" ? 1 : fundingUnit === "8h" ? 8 : 8760;
   const fundingDecimals = fundingUnit === "apr" ? 1 : 4;
   const venueHeaders = VENUES.map((venue: any) => ({ name: venue.name, logo: venue.logo }));
-  const fundingMatrix = watchMarkets.map((market2) => {
+  const fundingMarkets = MARKETS.filter((market2) => marketMatches(market2, state.fq || ""))
+    .slice()
+    .sort((a, b) => getMarketStats2(b).w0.oi - getMarketStats2(a).w0.oi);
+  const fundingMatrix = fundingMarkets.map((market2) => {
     const stats = getMarketStats2(market2);
     const statsByVenue: any = {};
     stats.vm.forEach((venueStat: any) => {
@@ -2174,7 +1813,7 @@ export function buildViewModel(terminal: Terminal) {
       cls: isActive ? "is-active" : "",
       pressed: isActive ? "true" : "false",
       pick: () => {
-        self.setState({ funit: unit[0] });
+        self.setState({ funit: unit[0], tpg: firstPage("funding") });
       },
     };
   });
@@ -2253,68 +1892,7 @@ export function buildViewModel(terminal: Terminal) {
       venueMeta[slowestVenue.id].lat +
       " ms",
   };
-  const totalLiquidations = MARKETS.reduce(
-    (totals, market2) => {
-      const stats = getMarketStats2(market2);
-      return { l: totals.l + stats.liqLong, s: totals.s + stats.liqShort };
-    },
-    { l: 0, s: 0 },
-  );
-  const weightedFundingApr =
-    MARKETS.reduce((weightedSum, market2) => {
-      const stats = getMarketStats2(market2);
-      return weightedSum + annualizeFunding(stats.fAvg) * stats.w0.oi;
-    }, 0) / MARKETS.reduce((sum, market2) => sum + getMarketStats2(market2).w0.oi, 0);
-  summaryCards = [
-    summaryCards[0],
-    summaryCards[1],
-    {
-      label: "Liquidations, 24h",
-      value: "$" + formatCompact(totalLiquidations.l + totalLiquidations.s),
-      sub: "Across all markets",
-      hasSplit: false,
-      split: [],
-      hasStack: false,
-      hasDuo: true,
-      duo: [
-        {
-          w: ((totalLiquidations.l / (totalLiquidations.l + totalLiquidations.s)) * 100).toFixed(1),
-          c: "#d7303a",
-          label: "Longs $" + formatCompact(totalLiquidations.l),
-        },
-        {
-          w: ((totalLiquidations.s / (totalLiquidations.l + totalLiquidations.s)) * 100).toFixed(1),
-          c: "var(--text)",
-          label: "Shorts $" + formatCompact(totalLiquidations.s),
-        },
-      ],
-    },
-    {
-      label: "Funding, APR",
-      value: formatPct(weightedFundingApr, 2),
-      sub: "Weighted by open interest",
-      hasSplit: false,
-      split: [],
-      hasStack: false,
-      hasDuo: false,
-      duo: [],
-    },
-    {
-      label: "Feeds",
-      value:
-        VENUES.filter((venue) => venueMeta[venue.id].ok).length + " of " + VENUES.length + " live",
-      sub: slowestVenue.name + " at " + venueMeta[slowestVenue.id].lat + " ms",
-      hasSplit: false,
-      split: [],
-      hasStack: true,
-      hasDuo: false,
-      duo: [],
-    },
-  ];
-  summaryCards[0].hasDuo = false;
-  summaryCards[0].duo = [];
-  summaryCards[1].hasDuo = false;
-  summaryCards[1].duo = [];
+  const weekAxis = ["7d ago", "6d", "5d", "4d", "3d", "2d", "1d", "Now"].map((t) => ({ t }));
   const detailMetric = state.wdm || "funding";
   const detailSubview = state.wdsv || "book";
   if (state.watchOpen) {
@@ -2429,7 +2007,7 @@ export function buildViewModel(terminal: Terminal) {
       chart.title = "Funding, annualized";
       chart.value = formatPct(annualizeFunding(detailStats.fAvg), 2);
       chart.valCls = detailStats.fAvg >= 0 ? "" : "down";
-      chart.x = [{ t: "7 days ago" }, { t: "5 days" }, { t: "3 days" }, { t: "Now" }];
+      chart.x = weekAxis;
     } else if (detailMetric === "oi") {
       var detailOiHistory = [];
       let oiValue = detailAggregate.oi * (0.88 + seriesRng() * 0.08);
@@ -2463,7 +2041,7 @@ export function buildViewModel(terminal: Terminal) {
           ),
         },
       ];
-      chart.x = [{ t: "7 days ago" }, { t: "5 days" }, { t: "3 days" }, { t: "Now" }];
+      chart.x = weekAxis;
     } else if (detailMetric === "liq") {
       var detailShortBarsPath = "";
       let longBarsPath = "";
@@ -2608,7 +2186,7 @@ export function buildViewModel(terminal: Terminal) {
       chart.tip = {
         show: true,
         left: leftPct.toFixed(2),
-        side: leftPct > 55 ? "tip-l" : "tip-r",
+        side: leftPct > 55 ? "side-l" : "side-r",
         when:
           hoursAgo === 0
             ? "Now"
@@ -2630,7 +2208,7 @@ export function buildViewModel(terminal: Terminal) {
         value: formatPrice(detailStats.low) + " to " + formatPrice(detailStats.high),
         cls: "",
       },
-      { label: "Basis", value: watchDetail.kpis[2].value, cls: watchDetail.kpis[2].cls },
+      { label: "Basis", value: watchDetail.basis, cls: watchDetail.basisCls },
       { label: "Price Gap", value: detailStats.gap.toFixed(1) + " bps", cls: "" },
       {
         label: "Funding Spread",
@@ -4037,7 +3615,7 @@ export function buildViewModel(terminal: Terminal) {
     leave: makeLeaveHandler("fzHov"),
     ...fundingHoverTip,
   };
-  const exchangeQuery = (state.wq || "").trim().toLowerCase();
+  const exchangeQuery = (state.xq || "").trim().toLowerCase();
   const exchangeCategory = state.xcat || "all";
   const filteredExchanges = venueRows2.filter(
     (exchange) =>
@@ -4063,7 +3641,7 @@ export function buildViewModel(terminal: Terminal) {
       cls: isActive ? "pill is-active" : "pill",
       pressed: isActive ? "true" : "false",
       pick: () => {
-        self.setState({ xcat: tab[0] });
+        self.setState({ xcat: tab[0], tpg: firstPage("venues") });
       },
     };
   });
@@ -5763,7 +5341,6 @@ export function buildViewModel(terminal: Terminal) {
       } catch {}
       showToast("Link copied.");
     };
-    browserView.copy;
     browserView.copy = () => {
       try {
         navigator.clipboard.writeText(pageUrl);
@@ -7088,6 +6665,19 @@ user: `
     return shortMonthNames[date.getUTCMonth()] + " " + date.getUTCDate();
   }
   function generateSeries(seed: any, endValue: any, drift: any, volatility: any, hasSpikes?: any) {
+    const cacheKey = [seed, endValue, drift, volatility, !!hasSpikes, seriesLength].join("|");
+    const cached = seriesCache.get(cacheKey);
+    if (cached) {
+      return cached;
+    }
+    if (seriesCache.size > 2000) {
+      seriesCache.clear();
+    }
+    const series = buildSeries(seed, endValue, drift, volatility, hasSpikes);
+    seriesCache.set(cacheKey, series);
+    return series;
+  }
+  function buildSeries(seed: any, endValue: any, drift: any, volatility: any, hasSpikes?: any) {
     const random2 = seededRandom(hashString(seed));
     const series = new Array(seriesLength);
     let walk = 0;
@@ -7116,14 +6706,6 @@ user: `
     ["Commodities", "#f0a35a"],
     ["Forex", "#b49cff"],
   ];
-  const venueColors: any = {
-    binance: "#e5b75a",
-    bybit: "#c9c9c7",
-    hyperliquid: "#4fd1b8",
-    lighter: "#3b6ff6",
-    variational: "#b49cff",
-    gmx: "#7c5cff",
-  };
   const categoryTotals: any = {};
   const venueTotals: any = {};
   categoryColors.forEach((category) => {
@@ -7168,7 +6750,7 @@ user: `
         const fundingNoise = generateSeries("fv" + venue.id, 1, 0, 0.035);
         rows2.push({
           name: venue.name,
-          color: venueColors[venue.id],
+          color: VENUE_COLORS[venue.id],
           logo: venue.logo,
           data: fundingNoise.map((noise, dayIdx) => {
             const daysAgo = seriesLength - 1 - dayIdx;
@@ -7220,7 +6802,7 @@ user: `
             : venueStats.oi;
       rows2.push({
         name: venue.name,
-        color: venueColors[venue.id],
+        color: VENUE_COLORS[venue.id],
         logo: venue.logo,
         data: generateSeries(
           "mv" + venue.id + metric2,
@@ -7437,7 +7019,7 @@ user: `
           : formatValue(tipTotal),
       rows: tipRows,
       left: tipLeftPct.toFixed(2),
-      side: tipLeftPct > 55 ? "mwTip-l" : "mwTip-r",
+      side: tipLeftPct > 55 ? "side-l" : "side-r",
       vline: (toX(hoverIndex3) / 10).toFixed(2),
     };
   }
@@ -7687,13 +7269,13 @@ user: `
             .join(","),
         );
       }
-      try {
-        navigator.clipboard.writeText(
-          csvLines.join(`
-`),
-        );
-      } catch {}
-      showToast("CSV for " + visibleDays + " days copied to the clipboard.");
+      const copied = navigator.clipboard
+        ? navigator.clipboard.writeText(csvLines.join("\n"))
+        : Promise.reject(new Error("Clipboard unavailable"));
+      copied.then(
+        () => showToast("CSV for " + visibleDays + " days copied to the clipboard."),
+        () => showToast("Couldn't copy the CSV. Check clipboard permissions and try again."),
+      );
     },
   };
   function pctChange30d(values: any) {
@@ -7776,6 +7358,7 @@ user: `
       ),
     })),
   );
+  const liquidationSeries = generateSeries("liqk", 1, 0.001, 0.12, true);
   const totalOi2 = VENUES.reduce((sum, venue) => sum + venueTotals[venue.id].oi, 0);
   const totalVolume3 = VENUES.reduce((sum, venue) => sum + venueTotals[venue.id].vol, 0);
   const dexOi = VENUES.filter((venue) => venueMeta[venue.id].type === "DEX").reduce(
@@ -7825,9 +7408,9 @@ user: `
             "Liquidations, 24h",
             "Positions force-closed in the last 24 hours.",
             "$" + formatCompact(totalVolume3 * 0.012),
-            pctChange30d(generateSeries("liqk", 1, 0.001, 0.12, true)),
+            pctChange30d(liquidationSeries),
             null,
-            generateSeries("liqk", 1, 0.001, 0.12, true),
+            liquidationSeries,
           ),
           buildKpi(
             "Funding APR",
@@ -7864,7 +7447,8 @@ user: `
               "Volume to OI",
               "Daily turnover: 24h volume divided by open interest. Higher means more active trading.",
               (totalVolume3 / (totalOi2 || 1)).toFixed(2) + "x",
-              pctChange30d(volumeTotals) - pctChange30d(oiTotals),
+              ((1 + pctChange30d(volumeTotals) / 100) / (1 + pctChange30d(oiTotals) / 100) - 1) *
+                100,
             ),
             buildKpi(
               "Median Feed Latency",
@@ -7934,9 +7518,9 @@ user: `
       const longShortRatio = 0.85 + random2() * 0.5;
       const fundingApr = stats.fw ? (stats.fsum / stats.fw) * 24 * 365 : 0;
       let sparkPath2 = "";
+      const seriesMin = Math.min.apply(null, oiSeries.slice(seriesLength - 60));
+      const seriesMax = Math.max.apply(null, oiSeries.slice(seriesLength - 60));
       for (let dayIdx = seriesLength - 60; dayIdx < seriesLength; dayIdx++) {
-        const seriesMin = Math.min.apply(null, oiSeries.slice(seriesLength - 60));
-        const seriesMax = Math.max.apply(null, oiSeries.slice(seriesLength - 60));
         sparkPath2 +=
           (dayIdx === seriesLength - 60 ? "M" : "L") +
           (((dayIdx - (seriesLength - 60)) / 59) * 100).toFixed(1) +
@@ -7953,7 +7537,7 @@ user: `
         vol: "$" + formatCompact(stats.vol),
         share: oiShare.toFixed(1) + "%",
         shareW: Math.max(2, oiShare).toFixed(1),
-        color: venueColors[venue.id],
+        color: VENUE_COLORS[venue.id],
         ls: longShortRatio.toFixed(2),
         lsCls: longShortRatio >= 1 ? "up" : "down",
         // The label carries the unit ("Funding, APR (%)"), so the value has no % sign.
@@ -8279,7 +7863,7 @@ user: `
             return {
               show: true,
               left: leftPct.toFixed(2),
-              side: leftPct > 55 ? "tip-l" : "tip-r",
+              side: leftPct > 55 ? "side-l" : "side-r",
               date: formatDayLabel(hoverIdx),
               rows: activePerfSeries
                 .map((series: any) => {
@@ -8363,7 +7947,7 @@ user: `
           category[0] === "Crypto" ? 0.003 : 0.0068,
         ),
         open: () => {
-          self.setState({ wcat: category[0], wview: "markets" });
+          self.setState({ wcat: category[0], wview: "markets", tpg: firstPage("markets") });
         },
       });
     });
@@ -8496,7 +8080,7 @@ user: `
       id: venue.id,
       name: venue.name,
       logo: venue.logo,
-      color: venueColors[venue.id],
+      color: VENUE_COLORS[venue.id],
       weeks: weeklyTotals.slice(totalWeeks - weekCount),
     };
   });
@@ -8661,7 +8245,7 @@ user: `
         : {
             show: true,
             left: (((weeklyHoverIndex + 0.5) * weekWidth) / 10).toFixed(2),
-            side: (weeklyHoverIndex + 0.5) / weekCount > 0.55 ? "tip-l" : "tip-r",
+            side: (weeklyHoverIndex + 0.5) / weekCount > 0.55 ? "side-l" : "side-r",
             date:
               "Week of " +
               (() => {
@@ -9665,22 +9249,26 @@ user: `
     venueCount: VENUES.length,
     wq: state.wq,
     onWq: (e: any) => {
-      self.setState({ wq: e.target.value });
+      self.setState({ wq: e.target.value, tpg: firstPage("markets") });
     },
-    wsum: summaryCards,
-    wcats: categoryPills2,
-    wrows: watchRows,
+    xq: state.xq || "",
+    onXq: (e: any) => {
+      self.setState({ xq: e.target.value, tpg: firstPage("venues") });
+    },
+    fq: state.fq || "",
+    onFq: (e: any) => {
+      self.setState({ fq: e.target.value, tpg: firstPage("funding") });
+    },
     noW: watchRows.length === 0,
     ws: sortHeaders,
-    exList: filteredExchanges,
     noEx: filteredExchanges.length === 0,
-    xcats: exchangeCategoryTabs,
     prop2: propViewModel,
     liq: liquidityViewModel,
     wrowsP: marketsPaged.rows,
     wrowsPager: marketsPaged.pager,
     exListP: venuesPaged.rows,
     exPager: venuesPaged.pager,
+    noF: fundingMatrix.length === 0,
     fmRowsP: fundingPaged.rows,
     fmPager: fundingPaged.pager,
     mw: marketWatch,
@@ -9688,7 +9276,7 @@ user: `
       markets:
         watchMarkets.length +
         " markets, " +
-        (state.wcat && state.wcat !== "All" ? state.wcat.toLowerCase() : "all categories"),
+        (state.wcat && state.wcat !== "all" ? state.wcat.toLowerCase() : "all categories"),
       venues: VENUES.length + " venues, live feeds",
       funding:
         "Rates shown " + ((state.funit || "apr") === "apr" ? "annualized" : "per " + state.funit),
@@ -9778,21 +9366,15 @@ user: `
     cvFunding: chartView === "funding",
     q: quotePanel,
     wd: watchDetail,
-    wdtabs: detailTabs,
     wdmetrics: metricTabs,
     wdsel: subviewTabs,
-    exRows: venueRows2,
     fmHead: venueHeaders,
-    fmRows: fundingMatrix,
-    funits: fundingUnitTabs,
     wviews: watchViewTabs,
     feed: feedStatus,
     viewMarkets: (state.wview || "markets") === "markets",
     viewExchanges: state.wview === "exchanges",
     viewFunding: state.wview === "funding",
-    wsheetOpen: isMobile && !!state.watchOpen,
     wsheetState: isMobile && openWatchRow ? "open" : "closed",
-    ww: openWatchRow || {},
     asks: askRows.map(formatBookLevel).reverse(),
     bids: bidRows.map(formatBookLevel),
     midText: formatPrice(midPrice),

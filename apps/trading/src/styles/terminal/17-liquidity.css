@@ -805,12 +805,6 @@
   min-width: 230px;
   max-width: 260px;
 }
-.lq-chart .mwc-tip.side-r {
-  transform: translateX(14px);
-}
-.lq-chart .mwc-tip.side-l {
-  transform: translateX(calc(-100% - 14px));
-}
 .lq-chart .tip-h b,
 .lq-chart .tip-r span {
   white-space: nowrap;
