@@ -42,7 +42,7 @@ export function useDialogFocus(
         closeRef.current();
       } else if (event.key === "Tab" && dialog) {
         const items = Array.from(dialog.querySelectorAll<HTMLElement>(FOCUSABLE)).filter(
-          (el) => el.getClientRects().length > 0,
+          (el) => el.tabIndex >= 0 && el.getClientRects().length > 0,
         );
         if (!items.length) {
           event.preventDefault();

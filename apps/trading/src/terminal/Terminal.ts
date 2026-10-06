@@ -195,19 +195,9 @@ export class Terminal extends Store<AppProps, TerminalState> {
         }
         return;
       }
-      const items = self._sItems || [];
       if (key === "Escape") {
         e.preventDefault();
         self.setState({ srch: false });
-      } else if (key === "ArrowDown") {
-        e.preventDefault();
-        self.setState({ sIdx: Math.min(items.length - 1, (self.state.sIdx || 0) + 1) });
-      } else if (key === "ArrowUp") {
-        e.preventDefault();
-        self.setState({ sIdx: Math.max(0, (self.state.sIdx || 0) - 1) });
-      } else if (key === "Enter" && items[self.state.sIdx || 0]) {
-        e.preventDefault();
-        items[self.state.sIdx || 0].open();
       }
     };
     window.addEventListener("keydown", this.onKey);
