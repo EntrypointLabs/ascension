@@ -12,26 +12,32 @@ export interface IconToggleItem {
 
 /**
  * Segmented control whose options carry an icon tile and a label (`.ttg`).
- * Renders as a tablist; extra classes position it (`seg-sm wviews`, `mw-sticky`, ...).
+ * Renders as a tablist by default; `role="group"` renders pressed toggle buttons instead, for
+ * controls that switch a chart or panel rather than a view. Extra classes position it
+ * (`seg-sm wviews`, `mw-sticky`, ...).
  */
 export function IconToggle({
   items,
   label,
   className = "",
+  role = "tablist",
 }: {
   items?: IconToggleItem[];
   label: string;
   className?: string;
+  role?: "tablist" | "group";
 }) {
+  const isTabs = role === "tablist";
   return (
-    <div className={("ttg " + className).trim()} role="tablist" aria-label={label}>
+    <div className={("ttg " + className).trim()} role={role} aria-label={label}>
       {(items || []).map((item, i) => (
         <button
           key={i}
           type="button"
-          role="tab"
+          role={isTabs ? "tab" : undefined}
           className={item.cls}
-          aria-selected={item.pressed === "true"}
+          aria-selected={isTabs ? item.pressed === "true" : undefined}
+          aria-pressed={isTabs ? undefined : item.pressed === "true"}
           onClick={item.pick}
         >
           <span className="ms-ic" aria-hidden="true">
