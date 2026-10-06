@@ -4,10 +4,12 @@ import { SnapshotButton } from "@/components/common/SnapshotButton";
 import { ExchangeShareCard } from "@/components/watch/ExchangeShareCard";
 import { ExchangesTableCard } from "@/components/watch/ExchangesTableCard";
 import { WeeklyVolumeCard } from "@/components/watch/WeeklyVolumeCard";
+import type { ExchangeCard } from "@/components/watch/types";
 import { parseStyle } from "@/lib/style";
 import type { TerminalViewModel } from "@/terminal/types";
 
 export function ExchangesView({ vm }: { vm: TerminalViewModel }) {
+  const cards: ExchangeCard[] = vm.mw?.exCards || [];
   return (
     <>
       <div className="mw-two">
@@ -19,7 +21,7 @@ export function ExchangesView({ vm }: { vm: TerminalViewModel }) {
         <InfoTip tip="A live snapshot of each venue: open interest trend, share of the market, and trading activity" />
       </h3>
       <div className="ex-cards">
-        {(vm.mw?.exCards || []).map((exCard: any, i: any) => (
+        {cards.map((exCard, i) => (
           <Fragment key={i}>
             <article className="exc exc2 snap-card" data-snap="venue">
               <header className="ex2-top">

@@ -1,11 +1,16 @@
 import { Fragment } from "react";
+import { Dropdown } from "@/components/common/Dropdown";
 import { InfoTip } from "@/components/common/InfoTip";
+import { Pager } from "@/components/common/Pager";
 import { SnapshotButton } from "@/components/common/SnapshotButton";
 import { MarketsTable } from "@/components/watch/MarketsTable";
+import { WatchEmpty, WatchSearch } from "@/components/watch/WatchSearch";
+import type { MarketRow } from "@/components/watch/types";
 import { parseStyle } from "@/lib/style";
 import type { TerminalViewModel } from "@/terminal/types";
 
 export function MarketsTableCard({ vm }: { vm: TerminalViewModel }) {
+  const rows: MarketRow[] = vm.wrowsP || [];
   return (
     <section className="mw-card snap-card mw-tablecard" data-snap="markets-table">
       <div className="mw-card-h">
@@ -20,107 +25,19 @@ export function MarketsTableCard({ vm }: { vm: TerminalViewModel }) {
       </div>
       <div className="mw-card-tools">
         <div className="wfilter">
-          <div className="dd">
-            <button
-              type="button"
-              className={vm.mw?.dd?.mcat?.btnCls}
-              aria-haspopup="listbox"
-              aria-expanded={vm.mw?.dd?.mcat?.openStr}
-              onClick={vm.mw?.dd?.mcat?.toggle}
-            >
-              <span className="dd-l">{vm.mw?.dd?.mcat?.label}</span>
-              <b>{vm.mw?.dd?.mcat?.cur}</b>
-              <svg
-                className="dd-chev"
-                width="14"
-                height="14"
-                viewBox="0 0 24 24"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden="true"
-                style={{ fill: "none", stroke: "currentColor" }}
-              >
-                <path d="m6 9 6 6 6-6" />
-              </svg>
-            </button>
-            {vm.mw?.dd?.mcat?.open ? (
-              <>
-                <button
-                  type="button"
-                  className="dd-scrim"
-                  aria-label="Close"
-                  onClick={vm.mw?.dd?.mcat?.close}
-                />
-                <div className="dd-menu" role="listbox" aria-label={vm.mw?.dd?.mcat?.label}>
-                  {(vm.mw?.dd?.mcat?.opts || []).map((opt: any, i: any) => (
-                    <Fragment key={i}>
-                      <button
-                        type="button"
-                        role="option"
-                        aria-selected={opt?.sel}
-                        className={opt?.cls}
-                        onClick={opt?.pick}
-                      >
-                        {opt != null && opt.hasLogo ? (
-                          <>
-                            <img className="logo" src={opt?.logo} data-venue="1" alt="" />
-                          </>
-                        ) : null}
-                        <span>{opt?.label}</span>
-                        <em className="num">{opt?.count}</em>
-                        <svg
-                          className="dd-tick"
-                          width="14"
-                          height="14"
-                          viewBox="0 0 24 24"
-                          strokeWidth="2.4"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          aria-hidden="true"
-                          style={{ fill: "none", stroke: "currentColor" }}
-                        >
-                          <path d="m5 12 5 5 9-10" />
-                        </svg>
-                      </button>
-                    </Fragment>
-                  ))}
-                </div>
-              </>
-            ) : null}
-          </div>
-          <label className="search wsearch">
-            <svg
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              strokeWidth="1.8"
-              strokeLinecap="round"
-              aria-hidden="true"
-              style={{ fill: "none", stroke: "currentColor" }}
-            >
-              <circle cx="11" cy="11" r="7" />
-              <path d="m20 20-3.5-3.5" />
-            </svg>
-            <input
-              type="text"
-              placeholder="Search markets"
-              aria-label="Search markets"
-              value={vm.wq ?? ""}
-              onChange={vm.onWq}
-            />
-          </label>
+          <Dropdown dd={vm.mw?.dd?.mcat} />
+          <WatchSearch label="Search markets" value={vm.wq} onChange={vm.onWq} />
         </div>
       </div>
       <MarketsTable vm={vm} />
       <div className="wlist pc-list">
-        {(vm.wrowsP || []).map((wrowsPItem: any, i: any) => (
+        {rows.map((wrowsPItem, i) => (
           <Fragment key={i}>
             <button type="button" className="wrow-m" onClick={wrowsPItem?.toggle}>
               <span className="av">
                 <img className="logo" src={wrowsPItem?.logo} alt="" />
                 <span className="av-badges">
-                  {(wrowsPItem?.venuesM || []).map((venuesMItem: any, i2: any) => (
+                  {(wrowsPItem?.venuesM || []).map((venuesMItem, i2) => (
                     <Fragment key={i2}>
                       <img
                         className="av-badge"
@@ -164,56 +81,10 @@ export function MarketsTableCard({ vm }: { vm: TerminalViewModel }) {
           </Fragment>
         ))}
       </div>
-      <div className="pgx num">
-        <span className="pgx-t">{vm.wrowsPager?.text}</span>
-        <span className="pgx-c">
-          <button
-            type="button"
-            className="pgx-a"
-            aria-label="Previous page"
-            disabled={!!vm.wrowsPager?.prevDis}
-            onClick={vm.wrowsPager?.prev}
-          >
-            <svg
-              width="14"
-              height="14"
-              viewBox="0 0 24 24"
-              strokeWidth="2"
-              strokeLinecap="round"
-              aria-hidden="true"
-              style={{ fill: "none", stroke: "currentColor" }}
-            >
-              <path d="m15 18-6-6 6-6" />
-            </svg>
-          </button>
-          {(vm.wrowsPager?.nums || []).map((num: any, i: any) => (
-            <Fragment key={i}>
-              <button type="button" className={num?.cls} aria-current={num?.cur} onClick={num?.go}>
-                {num?.label}
-              </button>
-            </Fragment>
-          ))}
-          <button
-            type="button"
-            className="pgx-a"
-            aria-label="Next page"
-            disabled={!!vm.wrowsPager?.nextDis}
-            onClick={vm.wrowsPager?.next}
-          >
-            <svg
-              width="14"
-              height="14"
-              viewBox="0 0 24 24"
-              strokeWidth="2"
-              strokeLinecap="round"
-              aria-hidden="true"
-              style={{ fill: "none", stroke: "currentColor" }}
-            >
-              <path d="m9 18 6-6-6-6" />
-            </svg>
-          </button>
-        </span>
-      </div>
+      {vm.noW ? (
+        <WatchEmpty title="No markets match">Try a ticker like ETH, US500 or Gold.</WatchEmpty>
+      ) : null}
+      <Pager pager={vm.wrowsPager} scrollTarget=".mw-card" />
     </section>
   );
 }

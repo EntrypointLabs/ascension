@@ -5,12 +5,14 @@ import { ExchangesView } from "@/components/watch/ExchangesView";
 import { FundingView } from "@/components/watch/FundingView";
 import { MarketsView } from "@/components/watch/MarketsView";
 import { WatchChartCard } from "@/components/watch/WatchChartCard";
+import type { Kpi } from "@/components/watch/types";
 import { parseStyle } from "@/lib/style";
 import type { TerminalViewModel } from "@/terminal/types";
 
 export function WatchPage({ vm }: { vm: TerminalViewModel }) {
+  const kpis: Kpi[] = vm.mw?.kpis || [];
   return (
-    <section className="page page-watch" aria-label="Market Watch">
+    <section id="main" className="page page-watch" aria-label="Market Watch" tabIndex={-1}>
       <div className="page-inner">
         <header className="page-head wh">
           <div>
@@ -27,7 +29,7 @@ export function WatchPage({ vm }: { vm: TerminalViewModel }) {
         {/* Phone-only full-width copy of the view toggle. */}
         <IconToggle items={vm.wviews} label="View" className="mw-sticky" />
         <div className="mw-kpis">
-          {(vm.mw?.kpis || []).map((kpi: any, i: any) => (
+          {kpis.map((kpi, i) => (
             <Fragment key={i}>
               <div className="mw-kpi">
                 <span className="kp-l">
